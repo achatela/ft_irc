@@ -1,9 +1,13 @@
 NAME = ft_irc
-SRCS = srcs/main.cpp srcs/handle_errors.cpp
-OBJS_PATH = objs/main.o objs/handle_errors.o
+SRCFILES = main.cpp handle_errors.cpp
+SOURCE = ./srcs/
+OBJ = ./objs/
 CC = c++
+SRCS = ${addprefix ${SOURCE},${SRCFILES}}
 FLAGS = -Wall -Werror -Wextra -std=c++98
+OBJSFILES = $(SRCFILES:.cpp=.o)
 OBJS = $(SRCS:.cpp=.o)
+OBJS_PATH = ${addprefix ${OBJ},${OBJSFILES}}
 
 %.o: %.cpp 
 	$(CC) $(FLAGS) -I./ -c $< -o $@
