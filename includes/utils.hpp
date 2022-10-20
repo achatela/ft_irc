@@ -7,6 +7,11 @@
 # include <cstdlib>
 # include <netinet/in.h>
 # include <unistd.h>
+# include <vector>
+# include <poll.h>
+
+# define ON 0
+# define OFF 1
 
 int handle_errors(int ac, char **av);
 int create_socket(void);

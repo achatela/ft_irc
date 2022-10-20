@@ -1,12 +1,10 @@
-#include "utils.hpp"
+#include "../includes/Server.hpp"
 
 int main (int ac, char **av){
-    int sockfd;
+    Server server(ac, av);
 
-    if (handle_errors(ac, av) == 1)
-        return 1;
-    sockfd = create_socket();
-    std::cout << sockfd << std::endl;
-    close(sockfd);
+    while (server.getStatus() == ON)
+      server.sondage();
+    //close(sockfd);
     return 0;
 }
