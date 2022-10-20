@@ -2,8 +2,13 @@
 # define UTILS_HPP
 
 # include <iostream>
+# include <sys/types.h>
+# include <sys/socket.h>
 # include <cstdlib>
+# include <netinet/in.h>
+# include <unistd.h>
 
 int handle_errors(int ac, char **av);
+int create_socket(void);
 
 #endif /* UTILS_HPP */

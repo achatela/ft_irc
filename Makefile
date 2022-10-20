@@ -1,5 +1,5 @@
 NAME = ft_irc
-SRCFILES = main.cpp handle_errors.cpp
+SRCFILES = main.cpp handle_errors.cpp create_sock.cpp
 SOURCE = ./srcs/
 OBJ = ./objs/
 CC = c++
@@ -9,14 +9,13 @@ OBJSFILES = $(SRCFILES:.cpp=.o)
 OBJS = $(SRCS:.cpp=.o)
 OBJS_PATH = ${addprefix ${OBJ},${OBJSFILES}}
 
-%.o: %.cpp 
-	$(CC) $(FLAGS) -I./ -c $< -o $@
+%.o: %.cpp includes/utils.hpp
+	$(CC) $(FLAGS) -I./includes -c $< -o $@
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
+$(NAME): $(OBJS) #$(OBJS_PATH) 
 	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
-	mkdir objs
 	mv ${OBJS} objs/
 
 clean:
@@ -24,7 +23,6 @@ clean:
 
 fclean: clean
 	rm -f $(NAME)
-	rm -rf objs
 
 re: fclean all
 

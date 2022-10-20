@@ -1,4 +1,4 @@
-#include "../includes/utils.hpp"
+#include "utils.hpp"
 
 
 static bool is_number(const std::string& s)
@@ -21,6 +21,5 @@ int handle_errors(int ac, char **av){
         std::cerr << "Second argument as to be a valid number" << std::endl;
         return 1;
     }
-    std::cout << number << std::endl;
     return 0;
 }
