@@ -2,6 +2,7 @@
 # define SERVER_HPP
 
 # include "utils.hpp"
+#include "User.hpp"
 
 class Server{
 
@@ -15,6 +16,7 @@ class Server{
         bool _status;
         std::string _password;
         char _hostname[1024];
+        std::map<int, User> _Users;
 
     public:
         Server();

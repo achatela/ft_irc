@@ -1,4 +1,5 @@
 #include "../../includes/Server.hpp"
+#include "../../includes/User.hpp"
 #include <unistd.h>
 
 Server::Server(void){};
@@ -31,6 +32,7 @@ void Server::addPfd(){
     _pfds.push_back(pollfd());
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
+    _Users.insert (std::pair<int, User>(sock_fd, User(sock_fd)));
 }
 
 void Server::handleErrors(int ac, char **av){
@@ -74,7 +76,10 @@ void Server::sondage(){
                    break;
                 }
                 else
+                {
                     std::cout << server_reply << std::endl;
+                    std::cout << "HEY" << std::endl;
+                }
             }
             std::cout << _pfds.size() << std::endl;
         }

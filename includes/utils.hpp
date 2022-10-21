@@ -8,8 +8,11 @@
 # include <netinet/in.h>
 # include <unistd.h>
 # include <vector>
+#include <map>
 # include <poll.h>
 # include <arpa/inet.h>
+#include <cstring>
+#include <string>
 
 # define ON 0
 # define OFF 1
