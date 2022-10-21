@@ -62,4 +62,9 @@ void Server::sondage(){
     if (_pfds[0].revents == POLLIN){
         addPfd();
     }
+    // else
+    // {
+    //     if (!_pfds[1].revents && !_pfds[1].events)
+    //         exit(1);
+    // }
 }
