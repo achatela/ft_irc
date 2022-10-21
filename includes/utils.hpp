@@ -14,6 +14,9 @@
 # define ON 0
 # define OFF 1
 
+# define AUTHORIZED 0
+# define FORBIDDEN 1
+
 int handle_errors(int ac, char **av);
 int create_socket(void);
 

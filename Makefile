@@ -1,5 +1,5 @@
 NAME = ft_irc
-SRCFILES = main.cpp Server/Server.cpp
+SRCFILES = main.cpp Server/Server.cpp User/User.cpp
 SOURCE = ./srcs/
 OBJ = ./objs/
 CXX = c++
@@ -9,7 +9,7 @@ OBJSFILES = $(SRCFILES:.cpp=.o)
 OBJS = $(SRCS:.cpp=.o)
 OBJS_PATH = ${addprefix ${OBJ},${OBJSFILES}}
 
-%.o: %.cpp includes/utils.hpp utils/Server.hpp
+%.o: %.cpp includes/utils.hpp includes/Server.hpp includs/User.hpp
 	$(CXX) $(FLAGS) -I.  -c $< -o $@
 
 all: $(NAME)
