@@ -10,9 +10,11 @@ class Server{
         int _server_listen;
         int _port;
         struct sockaddr_in _address;
+        int addrlen = sizeof(_address);
         std::vector<pollfd> _pfds;
         bool _status;
         std::string _password;
+        char _hostname[1024];
 
     public:
         Server();
@@ -21,8 +23,9 @@ class Server{
 
         bool getStatus() {return _status;};
 
-        void handle_errors(int ac, char **av);
+        void handleErrors(int ac, char **av);
         void sondage(); //nom a change
+        void addPfd();
 };
 
 #endif
