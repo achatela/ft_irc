@@ -31,6 +31,7 @@ void Server::addPfd(){
     _pfds.push_back(pollfd());
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
+	std::cout << inet_ntoa(address.sin_addr) << ":" << ntohs(address.sin_port) << "fd =" << sock_fd << std::endl;
 }
 
 void Server::handleErrors(int ac, char **av){
@@ -58,7 +59,7 @@ void Server::sondage(){
     if (poll(&_pfds[0], _pfds.size(), 1000) == -1){
         return;
     }
-    std::cout << _pfds.size() << std::endl;
+    //std::cout << _pfds.size() << std::endl;
     if (_pfds[0].revents == POLLIN){
         addPfd();
     }

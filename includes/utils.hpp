@@ -9,6 +9,7 @@
 # include <unistd.h>
 # include <vector>
 # include <poll.h>
+# include <arpa/inet.h>
 
 # define ON 0
 # define OFF 1
