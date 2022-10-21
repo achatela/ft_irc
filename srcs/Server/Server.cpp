@@ -31,7 +31,7 @@ void Server::addPfd(){
     _pfds.push_back(pollfd());
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
-	std::cout << inet_ntoa(address.sin_addr) << ":" << ntohs(address.sin_port) << "fd =" << sock_fd << std::endl;
+	std::cout << inet_ntoa(address.sin_addr) << ":" << ntohs(address.sin_port) << " fd = " << sock_fd << std::endl;
 }
 
 void Server::handleErrors(int ac, char **av){
