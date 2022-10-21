@@ -54,17 +54,29 @@ void Server::handleErrors(int ac, char **av){
 
 void Server::sondage(){
 
+    char server_reply[4096];
     
     if (poll(&_pfds[0], _pfds.size(), 1000) == -1){
         return;
     }
-    std::cout << _pfds.size() << std::endl;
     if (_pfds[0].revents == POLLIN){
         addPfd();
     }
-    // else
-    // {
-    //     if (!_pfds[1].revents && !_pfds[1].events)
-    //         exit(1);
-    // }
+    if (_pfds.size() > 1)
+    {
+        for (std::vector<pollfd>::iterator it = _pfds.begin() + 1; it != _pfds.end(); it++)
+        {
+            if (it->revents == POLLIN)
+            {
+                if (recv(it->fd, server_reply, 4096, 0) == 0)
+                {
+                   it = _pfds.erase(it);
+                   break;
+                }
+                else
+                    std::cout << server_reply << std::endl;
+            }
+            std::cout << _pfds.size() << std::endl;
+        }
+    }
 }
