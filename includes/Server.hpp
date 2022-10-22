@@ -11,7 +11,7 @@ class Server{
         int _server_listen;
         int _port;
         struct sockaddr_in _address;
-        int addrlen = sizeof(_address);
+        int _addrlen;
         std::vector<pollfd> _pfds;
         bool _status;
         std::string _password;

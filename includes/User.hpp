@@ -8,7 +8,7 @@ class User{
     class Server;
 
     private:
-        bool _access = FORBIDDEN;
+        bool _access;
         std::string _nickname; // 9 maximum
         std::string _username;
         std::string _real_name;

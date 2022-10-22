@@ -4,7 +4,7 @@
 
 Server::Server(void){};
 
-Server::Server(int ac, char **av) : _opt(1), _status(ON){
+Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_address)){
     gethostname(_hostname, 40);
     std::cout << "host name is " << _hostname << std::endl;
     handleErrors(ac, av);

@@ -1,6 +1,6 @@
 #include "../../includes/User.hpp"
 
-User::User(int fd) : _fd(fd) {
+User::User(int fd) : _fd(fd), _access(FORBIDDEN) {
     char client_reply[4096];
     char *client_infos;
 
