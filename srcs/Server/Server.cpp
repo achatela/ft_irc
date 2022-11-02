@@ -28,11 +28,12 @@ void Server::addPfd(){
     int sock_fd;
     socklen_t addr_len = sizeof(address);
 
+    //Check if fd < -1 et handle
     sock_fd = accept(_server_listen, (struct sockaddr*)&address, &addr_len);
     _pfds.push_back(pollfd());
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
-    _Users.insert (std::pair<int, User>(sock_fd, User(sock_fd)));
+    _Users.insert(std::pair<int, User>(sock_fd, User(sock_fd, _password, _hostname)));
 }
 
 void Server::handleErrors(int ac, char **av){
@@ -72,16 +73,25 @@ void Server::sondage(){
             {
                 if (recv(it->fd, server_reply, 4096, 0) == 0)
                 {
-                   it = _pfds.erase(it);
-                   break;
+                    int i = it - _pfds.begin();
+                    std::map<int, User>::iterator it2 = _Users.begin();
+                    while (i - 1 > 0){
+                        it2++;
+                        i--;
+                    }
+                    it = _pfds.erase(it);
+                    _Users.erase(it2);
+                    break;
                 }
-                else
-                {
-                    std::cout << server_reply << std::endl;
-                    std::cout << "HEY" << std::endl;
+                else{
+                    int j = it - _pfds.begin();
+                    std::cout << "_Users range = " << _Users.size() << std::endl;
+                    std::cout << j << std::endl;
+                    _Users.at(_pfds[j].fd).handleRequests(server_reply);
                 }
             }
-            std::cout << _pfds.size() << std::endl;
+            //std::cout << _pfds.size() << std::endl;
         }
     }
+    server_reply[0] = '\0';
 }
