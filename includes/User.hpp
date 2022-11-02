@@ -9,6 +9,7 @@ class User{
 
     private:
         bool _access;
+        
         std::string _nickname; // 9 maximum any octet except NUL, CR(\r), LF(\b), " " and "@"
         std::string _username;
         std::string _real_name;
@@ -16,7 +17,9 @@ class User{
         std::string _real_password;
         std::string _hostname;
         int _fd;
-        //char[4096] _buffer; (to keep string until \r\n)
+        std::string _commands[COMMAND_SIZE] = {COMMANDS};
+
+        //std::string _buffer; (to keep string until \r\n)
 
     public:
         User(int fd, std::string password, char *hostname);

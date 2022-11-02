@@ -85,13 +85,12 @@ void Server::sondage(){
                 }
                 else{
                     int j = it - _pfds.begin();
-                    std::cout << "_Users range = " << _Users.size() << std::endl;
-                    std::cout << j << std::endl;
                     _Users.at(_pfds[j].fd).handleRequests(server_reply);
                 }
             }
             //std::cout << _pfds.size() << std::endl;
         }
     }
-    server_reply[0] = '\0';
+    //std::cout << "\terver_reply before reset = " << server_reply << std::endl;
+    memset(server_reply, 0, 4096);
 }

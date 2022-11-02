@@ -62,6 +62,23 @@ User::~User(){};
 
 void User::handleRequests(char *request){
     std::string req(request);
+    std::string::size_type found;
+    int i = 0; //used later to send to a the right function (with pointers to function)
 
+    for (; i != COMMAND_SIZE; i++){
+        found = req.find(_commands[i]);
+        if (found != std::string::npos){
+            std::cout << "\tcommand found" << std::endl; //debug
+            std::cout << "\tcommand is " << _commands[i] << std::endl; //debug
+            break;
+        }
+    }
+    // check if req is terminated by "\r\n" if not the case, add req to _buffer
+    // otherwise send to the right function (with i)
+
+    if (found == std::string::npos)
+        std::cout << "\tcommand not found" << std::endl; //debug
     std::cout << request << std::endl;
+
+    //if _buffer is terminated by "\r\n" reset buffer
 }
