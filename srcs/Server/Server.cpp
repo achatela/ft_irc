@@ -23,7 +23,6 @@ Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_addre
     _pfds.back().events = POLLIN;
 }
 
-    
 Server::~Server(){close(_server_listen);};
 
 void Server::addPfd(){
@@ -62,20 +61,13 @@ void Server::sondage(){
 
     char server_reply[4096];
     
-    std::cout << _Users.size() << std::endl;
+    //std::cout << _Users.size() << std::endl;
     
     if (poll(&_pfds[0], _pfds.size(), 1000) == -1){
         return;
     }
     if (_pfds[0].revents == POLLIN){
         addPfd();
-
-        try {
-            if (_Users.at(_Users.size() - 1).getAccess() == FORBIDDEN)
-                 _Users.erase(_Users.size() - 1);
-        }
-        catch (std::exception &e){}
-
     }
     if (_pfds.size() > 1)
     {
@@ -107,25 +99,21 @@ void Server::sondage(){
     memset(server_reply, 0, 4096);
 }
 
-
 void Server::handleRequests(char *request, int j){
     char *cmd;
 
-    _Users.at(_pfds[j].fd);
-    std::cout << "in handle request" << std::endl;
-    
+    _Users.at(_pfds[j].fd).concatBuffer(request);
     cmd = strtok(request, " ");
-    // for (; i != 1; i++){
-    //     found = req.find(_command_functions[i]);
-    //     if (found != std::string::npos){
-    //         std::cout << "\tcommand found" << std::endl; //debug
-    //         std::cout << "\tcommand is " << _command_functions[i] << std::endl; //debug
-    //         break;
-    //     }
-    // }
     std::string toSend(cmd);
-    if (_command_functions[toSend] != NULL)
-        _command_functions[toSend]("buffer");
+    std::cout << "cmd " << cmd << " excecuted" << std::endl;
+    if (_Users.at(_pfds[j].fd).getBuffer().find("\r\n") != std::string::npos){
+        if (_command_functions[toSend] != NULL){
+            _command_functions[toSend]("buffer");
+            _Users.at(_pfds[j].fd).clearBuffer();
+        }
+        else
+            {;} //handle buffer terminated but invalid
+    }
 //     // check if req is terminated by "\r\n" if not the case, add req to _buffer
 //     // otherwise send to the right function (with i)
         //if (req)
@@ -135,3 +123,4 @@ void Server::handleRequests(char *request, int j){
 
     //if _buffer is terminated by "\r\n" reset buffer
 }
+

@@ -64,7 +64,7 @@ class Command{
         void MAP(std::string buffer);
         void ME(std::string buffer);
         void MIRCDCC(std::string buffer);
-        void MODE(std::string buffer);
+        static void MODE(std::string buffer);
         void MOTD(std::string buffer);
         void MSG(std::string buffer);
         void NAMES(std::string buffer);

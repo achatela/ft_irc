@@ -51,7 +51,7 @@ void LASTLOGLUSERS(std::string buffer);
 void MAP(std::string buffer);
 void ME(std::string buffer);
 void MIRCDCC(std::string buffer);
-void MODE(std::string buffer);
+void Command::MODE(std::string buffer){(void)buffer; std::cout << "WWWWWWWWWWWWWWWWWWWWWWWW" << std::endl;return ;};
 void MOTD(std::string buffer);
 void MSG(std::string buffer);
 void NAMES(std::string buffer);
@@ -119,6 +119,7 @@ void WINDOW(std::string buffer);
 
 Command::Command(void){
     this->_commandsFilled["PING"] = PING;
+    this->_commandsFilled["MODE"] = MODE;
 };
 
 Command::~Command(void){

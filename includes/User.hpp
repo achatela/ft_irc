@@ -27,6 +27,7 @@ class User{
         std::string getBuffer(){return _buffer;};
         void setBuffer(std::string buf){_buffer = buf;};
         void concatBuffer(std::string buf){_buffer += buf;};
+        void clearBuffer(){_buffer.clear();};
 
         bool getAccess(){return _access;};
 };

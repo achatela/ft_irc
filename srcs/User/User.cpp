@@ -4,7 +4,7 @@
 User::User(int fd, std::string password, char *hostname) : _hostname(hostname), _real_password(password), _fd(fd), _access(AUTHORIZED) {
     char client_reply[4096];
     char *client_infos;
-
+    
     usleep(50000);
     recv(_fd, client_reply, 4096, 0);
     client_infos = strtok(client_reply, "\n");
