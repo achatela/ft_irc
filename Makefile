@@ -1,21 +1,21 @@
-NAME = ft_irc
-SRCFILES = main.cpp Server/Server.cpp User/User.cpp
+NAME = ircserv
+SRCFILES = main.cpp Server/Server.cpp User/User.cpp Command/Command.cpp
 SOURCE = ./srcs/
 OBJ = ./objs/
 CXX = c++
 SRCS = ${addprefix ${SOURCE},${SRCFILES}}
-FLAGS = -Wall -Werror -Wextra -std=c++98
+CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 OBJSFILES = $(SRCFILES:.cpp=.o)
 OBJS = $(SRCS:.cpp=.o)
 OBJS_PATH = ${addprefix ${OBJ},${OBJSFILES}}
 
-%.o: %.cpp includes/utils.hpp includes/Server.hpp includs/User.hpp
-	$(CXX) $(FLAGS) -I.  -c $< -o $@
+%.o: %.cpp includes/utils.hpp includes/Server.hpp includes/User.hpp includes/Command.hpp
+	$(CXX) $(CXXFLAGS) -I.  -c $< -o $@
 
 all: $(NAME)
 
 $(NAME): $(OBJS) #$(OBJS_PATH) 
-	$(CXX) $(FLAGS) $(OBJS) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 	mv ${OBJS} objs/
 
 clean:

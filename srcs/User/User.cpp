@@ -1,4 +1,5 @@
 #include "../../includes/User.hpp"
+#include "../../includes/Command.hpp"
 
 User::User(int fd, std::string password, char *hostname) : _hostname(hostname), _real_password(password), _fd(fd), _access(AUTHORIZED) {
     char client_reply[4096];
@@ -14,7 +15,7 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname), 
         if (strstr(client_infos, "PASS") != NULL){
             _password = std::string(client_infos + 5);
             if (_password[_password.length() - 1] == '\r')
-                _password.pop_back();
+                _password.erase(_password.end() - 1);
             if (_password != _real_password)
                 _access = FORBIDDEN;
             // std::cout << _password << std::endl;// debug
@@ -22,10 +23,10 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname), 
         else if (strstr(client_infos, "NICK") != NULL){
             _nickname = std::string(client_infos + 5);
             if (_nickname[_nickname.length() - 1] == '\r')
-                _nickname.pop_back();
+                _nickname.erase(_nickname.end() - 1);
             // Check if username is already existing code 433
             if (_nickname[0] == '\b' || _nickname[0] == '\r'
-                || _nickname[0] == '@' || _nickname[0] == NULL || _nickname[0] == ' '){
+                || _nickname[0] == '@' || _nickname[0] == '\0' || _nickname[0] == ' '){
                     _access = FORBIDDEN;
                     std::cout << "Wrong username format" << std::endl; //debug
             }
@@ -36,9 +37,9 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname), 
             _username = std::string(strtok(client_infos, ":") + 5);
             _real_name = std::string(strtok(NULL, ":"));
             if (_username[_username.length() - 1] == '\r')
-                _username.pop_back();
+                _username.erase(_username.end() - 1);
             if (_real_name[_real_name.length() - 1] == '\r')
-                _real_name.pop_back();
+                _real_name.erase(_real_name.end() - 1);
             // std::cout << _username << std::endl;// debug
             // std::cout << _real_name << std::endl;// debug
         }
@@ -47,6 +48,7 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname), 
     if (_password[0] == '\0' || _nickname[0] == '\0' || _real_name[0] == '\0'){
         _access = FORBIDDEN;
         std::cout << "missing informations" << std::endl; // debug
+        return ;
     }
     else if (_access == FORBIDDEN){
         std::cout << "Connection refused" << std::endl;
@@ -59,26 +61,3 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname), 
 }
         
 User::~User(){};
-
-void User::handleRequests(char *request){
-    std::string req(request);
-    std::string::size_type found;
-    int i = 0; //used later to send to a the right function (with pointers to function)
-
-    for (; i != COMMAND_SIZE; i++){
-        found = req.find(_commands[i]);
-        if (found != std::string::npos){
-            std::cout << "\tcommand found" << std::endl; //debug
-            std::cout << "\tcommand is " << _commands[i] << std::endl; //debug
-            break;
-        }
-    }
-    // check if req is terminated by "\r\n" if not the case, add req to _buffer
-    // otherwise send to the right function (with i)
-
-    if (found == std::string::npos)
-        std::cout << "\tcommand not found" << std::endl; //debug
-    std::cout << request << std::endl;
-
-    //if _buffer is terminated by "\r\n" reset buffer
-}

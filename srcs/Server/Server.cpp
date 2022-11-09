@@ -5,6 +5,9 @@
 Server::Server(void){};
 
 Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_address)){
+    Command _tmp;
+
+    _command_functions = _tmp.getCommand();
     gethostname(_hostname, 40);
     std::cout << "host name is " << _hostname << std::endl;
     handleErrors(ac, av);
@@ -59,11 +62,20 @@ void Server::sondage(){
 
     char server_reply[4096];
     
+    std::cout << _Users.size() << std::endl;
+    
     if (poll(&_pfds[0], _pfds.size(), 1000) == -1){
         return;
     }
     if (_pfds[0].revents == POLLIN){
         addPfd();
+
+        try {
+            if (_Users.at(_Users.size() - 1).getAccess() == FORBIDDEN)
+                 _Users.erase(_Users.size() - 1);
+        }
+        catch (std::exception &e){}
+
     }
     if (_pfds.size() > 1)
     {
@@ -85,7 +97,7 @@ void Server::sondage(){
                 }
                 else{
                     int j = it - _pfds.begin();
-                    _Users.at(_pfds[j].fd).handleRequests(server_reply);
+                    handleRequests(server_reply, j);
                 }
             }
             //std::cout << _pfds.size() << std::endl;
@@ -93,4 +105,33 @@ void Server::sondage(){
     }
     //std::cout << "\terver_reply before reset = " << server_reply << std::endl;
     memset(server_reply, 0, 4096);
+}
+
+
+void Server::handleRequests(char *request, int j){
+    char *cmd;
+
+    _Users.at(_pfds[j].fd);
+    std::cout << "in handle request" << std::endl;
+    
+    cmd = strtok(request, " ");
+    // for (; i != 1; i++){
+    //     found = req.find(_command_functions[i]);
+    //     if (found != std::string::npos){
+    //         std::cout << "\tcommand found" << std::endl; //debug
+    //         std::cout << "\tcommand is " << _command_functions[i] << std::endl; //debug
+    //         break;
+    //     }
+    // }
+    std::string toSend(cmd);
+    if (_command_functions[toSend] != NULL)
+        _command_functions[toSend]("buffer");
+//     // check if req is terminated by "\r\n" if not the case, add req to _buffer
+//     // otherwise send to the right function (with i)
+        //if (req)
+//     if (found == std::string::npos)
+//         std::cout << "\tcommand not found" << std::endl; //debug
+//     std::cout << request << std::endl;
+
+    //if _buffer is terminated by "\r\n" reset buffer
 }

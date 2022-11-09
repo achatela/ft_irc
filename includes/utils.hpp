@@ -20,7 +20,7 @@
 # define AUTHORIZED 0
 # define FORBIDDEN 1
 
-# define COMMANDS "PING", "PONG", "MODE"
+/*# define COMMANDS "PING", "PONG", "MODE"*/
 # define COMMAND_SIZE 3
 
 int handle_errors(int ac, char **av);
