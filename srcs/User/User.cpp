@@ -1,10 +1,10 @@
 #include "../../includes/User.hpp"
 #include "../../includes/Command.hpp"
 
-User::User(int fd, std::string password, char *hostname) : _hostname(hostname), _real_password(password), _fd(fd), _access(AUTHORIZED) {
+User::User(int fd, std::string password, char *hostname) : _hostname(hostname)/*changer par la valeur dans USER*/, _real_password(password), _fd(fd), _access(AUTHORIZED) {
     char client_reply[4096];
     char *client_infos;
-    
+
     usleep(50000);
     recv(_fd, client_reply, 4096, 0);
     client_infos = strtok(client_reply, "\n");
@@ -34,8 +34,8 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname), 
         }
         else if (strstr(client_infos, "USER") != NULL)
         {
-            _username = std::string(strtok(client_infos, ":") + 5);
-            _real_name = std::string(strtok(NULL, ":"));
+            _username = std::string(strtok(client_infos, ":") + 5); // enlever espace
+            _real_name = std::string(strtok(NULL, ":")); // enlever espace
             if (_username[_username.length() - 1] == '\r')
                 _username.erase(_username.end() - 1);
             if (_real_name[_real_name.length() - 1] == '\r')
@@ -58,6 +58,7 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname), 
         send(_fd, toSend.c_str(), toSend.length(), 0);
         // std::cout << toSend << std::endl;
     }
+    std::cout << "username ====== " << _username << std::endl;
 }
         
 User::~User(){};

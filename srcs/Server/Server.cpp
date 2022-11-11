@@ -35,7 +35,7 @@ void Server::addPfd(){
     _pfds.push_back(pollfd());
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
-    _Users.insert(std::pair<int, User>(sock_fd, User(sock_fd, _password, _hostname)));
+    _Users.insert(std::pair<int, User>(sock_fd, User(sock_fd, _password, _hostname))); // remove _hostname et changer par celui qu'on recoit dans USER
 }
 
 void Server::handleErrors(int ac, char **av){
@@ -105,11 +105,11 @@ void Server::handleRequests(char *request, int j){
     _Users.at(_pfds[j].fd).concatBuffer(request);
     cmd = strtok(request, " ");
     std::string toSend(cmd);
-    std::cout << "cmd " << cmd << " excecuted" << std::endl;
+    std::cout << "cmd " << cmd << " excecuted" << "\nrequest = " << _Users.at(_pfds[j].fd).getBuffer() << std::endl;
     if (_Users.at(_pfds[j].fd).getBuffer().find("\r\n") != std::string::npos){
         if (_command_functions[toSend] != NULL){
-            _command_functions[toSend]("buffer");
-            _Users.at(_pfds[j].fd).clearBuffer();
+            _command_functions[toSend](_Users.at(_pfds[j].fd).getBuffer());
+            _Users.at(_pfds[j].fd).clearBuffer(); // clear uniquement jusqu'au \r\n
         }
         else
             {;} //handle buffer terminated but invalid
