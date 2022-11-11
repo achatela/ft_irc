@@ -60,5 +60,10 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname)/*
     }
     std::cout << "username ====== " << _username << std::endl;
 }
-        
+
+void User::clearBuffer()
+{
+    _buffer.erase(0, _buffer.find("\r\n") + 2);
+}
+
 User::~User(){};

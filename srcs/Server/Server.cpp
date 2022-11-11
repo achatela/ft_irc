@@ -5,7 +5,7 @@
 Server::Server(void){};
 
 Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_address)){
-    Command _tmp;
+    Command _tmp(_Users, _pfds);
 
     _command_functions = _tmp.getCommand();
     gethostname(_hostname, 40);
@@ -35,7 +35,7 @@ void Server::addPfd(){
     _pfds.push_back(pollfd());
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
-    _Users.insert(std::pair<int, User>(sock_fd, User(sock_fd, _password, _hostname))); // remove _hostname et changer par celui qu'on recoit dans USER
+    _Users.insert(std::pair<int, User>(sock_fd, User(/*sock_fd, _password, _hostname*/))); // remove _hostname et changer par celui qu'on recoit dans USER
 }
 
 void Server::handleErrors(int ac, char **av){
@@ -100,19 +100,18 @@ void Server::sondage(){
 }
 
 void Server::handleRequests(char *request, int j){
-    char *cmd;
+    std::string cmd;
 
     _Users.at(_pfds[j].fd).concatBuffer(request);
-    cmd = strtok(request, " ");
-    std::string toSend(cmd);
-    std::cout << "cmd " << cmd << " excecuted" << "\nrequest = " << _Users.at(_pfds[j].fd).getBuffer() << std::endl;
-    if (_Users.at(_pfds[j].fd).getBuffer().find("\r\n") != std::string::npos){
-        if (_command_functions[toSend] != NULL){
-            _command_functions[toSend](_Users.at(_pfds[j].fd).getBuffer());
-            _Users.at(_pfds[j].fd).clearBuffer(); // clear uniquement jusqu'au \r\n
+    while (_Users.at(_pfds[j].fd).getBuffer().find("\r\n") != std::string::npos){
+        std::string cmd = _Users.at(_pfds[j].fd).getBuffer().substr(0, _Users.at(_pfds[j].fd).getBuffer().find(' '));
+        if (_command_functions[cmd] != NULL){
+            _command_functions[cmd](_Users.at(_pfds[j].fd).getBuffer(), _pfds[j].fd, _Users, _pfds);
         }
         else
-            {;} //handle buffer terminated but invalid
+            {;}
+        _Users.at(_pfds[j].fd).clearBuffer();
+        //handle buffer terminated but invalid
     }
 //     // check if req is terminated by "\r\n" if not the case, add req to _buffer
 //     // otherwise send to the right function (with i)
