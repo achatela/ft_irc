@@ -1,7 +1,7 @@
 #include "../../includes/User.hpp"
 #include "../../includes/Command.hpp"
 
-User::User(int fd, std::string password, char *hostname) : _hostname(hostname)/*changer par la valeur dans USER*/, _real_password(password), _fd(fd), _access(AUTHORIZED) {
+/*User::User(int fd, std::string password, char *hostname) : _hostname(hostname)changer par la valeur dans USER, _real_password(password), _fd(fd), _access(AUTHORIZED) {
     char client_reply[4096];
     char *client_infos;
 
@@ -54,12 +54,14 @@ User::User(int fd, std::string password, char *hostname) : _hostname(hostname)/*
         std::cout << "Connection refused" << std::endl;
     }
     else{
-        std::string toSend(":" + _hostname + " 001 " + _nickname +  " :Welcome to the Internet Relay Network " + _nickname + " ! " + _username + "@" + "\r\n" /*+ _hostname ?*/);
+        std::string toSend(":" + _hostname + " 001 " + _nickname +  " :Welcome to the Internet Relay Network " + _nickname + " ! " + _username + "@" + "\r\n" + _hostname ?);
         send(_fd, toSend.c_str(), toSend.length(), 0);
         // std::cout << toSend << std::endl;
     }
     std::cout << "username ====== " << _username << std::endl;
-}
+}*/
+
+User::User(){};
 
 void User::clearBuffer()
 {

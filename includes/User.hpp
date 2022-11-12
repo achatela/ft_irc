@@ -21,7 +21,7 @@ class User{
         std::string _buffer;
 
     public:
-        User(){return;};
+        User();
         User(int fd, std::string password, char *hostname);
         ~User();
 

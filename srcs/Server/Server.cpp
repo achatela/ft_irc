@@ -5,8 +5,9 @@
 Server::Server(void){};
 
 Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_address)){
-    Command _tmp(_Users, _pfds);
+    Command _tmp;
 
+    (void)_addrlen;
     _command_functions = _tmp.getCommand();
     gethostname(_hostname, 40);
     std::cout << "host name is " << _hostname << std::endl;
@@ -105,11 +106,8 @@ void Server::handleRequests(char *request, int j){
     _Users.at(_pfds[j].fd).concatBuffer(request);
     while (_Users.at(_pfds[j].fd).getBuffer().find("\r\n") != std::string::npos){
         std::string cmd = _Users.at(_pfds[j].fd).getBuffer().substr(0, _Users.at(_pfds[j].fd).getBuffer().find(' '));
-        if (_command_functions[cmd] != NULL){
-            _command_functions[cmd](_Users.at(_pfds[j].fd).getBuffer(), _pfds[j].fd, _Users, _pfds);
-        }
-        else
-            {;}
+        if (_command_functions[cmd] != NULL)
+            _command_functions[cmd](_Users.at(_pfds[j].fd).getBuffer(), _pfds[j].fd, _Users);
         _Users.at(_pfds[j].fd).clearBuffer();
         //handle buffer terminated but invalid
     }

@@ -14,7 +14,7 @@ class Server{
         int _server_listen;
         int _port;
 
-        std::map<std::string, void (*) (std::string buffer, int fd, std::map<int, User > & Users, std::vector<pollfd > pfds)> _command_functions;
+        std::map<std::string, void (*) (std::string buffer, int fd, std::map<int, User > & Users)> _command_functions;
         std::vector<pollfd > _pfds;
         std::string _password;
 
