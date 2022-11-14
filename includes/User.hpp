@@ -9,10 +9,10 @@ class User{
     class Command;
 
     private:
-        std::string _hostname;
-        std::string _real_password;
-        int _fd;
         bool _access;
+        std::string _real_password;
+        std::string _hostname;
+        int _fd;
         std::string _nickname; // 9 maximum any octet except NUL, CR(\r), LF(\b), " " and "@"
         std::string _username;
         std::string _real_name;
@@ -22,7 +22,7 @@ class User{
 
     public:
         User();
-        User(int fd, std::string password, char *hostname);
+        User(std::string password);
         ~User();
 
         std::string getBuffer(){return _buffer;};
@@ -43,6 +43,7 @@ class User{
         void setRealName(std::string real_name){_real_name = real_name; return;};
         std::string getPassword(){return _password;};
         void setPassword(std::string password){_password = password; return;};
+        void setRealPassword(std::string realPassword){_real_password = realPassword;};
 };
 
 #endif

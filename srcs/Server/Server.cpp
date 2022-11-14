@@ -36,7 +36,7 @@ void Server::addPfd(){
     _pfds.push_back(pollfd());
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
-    _Users.insert(std::pair<int, User>(sock_fd, User(/*sock_fd, _password, _hostname*/))); // remove _hostname et changer par celui qu'on recoit dans USER
+    _Users.insert(std::pair<int, User>(sock_fd, User(_password/*sock_fd, _password, _hostname*/))); // remove _hostname et changer par celui qu'on recoit dans USER
 }
 
 void Server::handleErrors(int ac, char **av){
@@ -62,7 +62,7 @@ void Server::sondage(){
 
     char server_reply[4096];
     
-    //std::cout << _Users.size() << std::endl;
+    // std::cout << _Users.size() << std::endl;
     
     if (poll(&_pfds[0], _pfds.size(), 1000) == -1){
         return;
@@ -90,7 +90,7 @@ void Server::sondage(){
                 }
                 else{
                     int j = it - _pfds.begin();
-                    handleRequests(server_reply, j);
+                    handleRequests(server_reply, _pfds[j].fd);
                 }
             }
             //std::cout << _pfds.size() << std::endl;
@@ -100,20 +100,24 @@ void Server::sondage(){
     memset(server_reply, 0, 4096);
 }
 
-void Server::handleRequests(char *request, int j){
+void Server::handleRequests(char *request, int fd){
     std::string cmd;
 
-    _Users.at(_pfds[j].fd).concatBuffer(request);
-    while (_Users.at(_pfds[j].fd).getBuffer().find("\r\n") != std::string::npos){
-        std::string cmd = _Users.at(_pfds[j].fd).getBuffer().substr(0, _Users.at(_pfds[j].fd).getBuffer().find(' '));
-        if (_command_functions[cmd] != NULL)
-            _command_functions[cmd](_Users.at(_pfds[j].fd).getBuffer(), _pfds[j].fd, _Users);
-        _Users.at(_pfds[j].fd).clearBuffer();
-        //handle buffer terminated but invalid
+    std::cout << "request = " << request << std::endl;
+
+    _Users.at(fd).concatBuffer(request);
+    while (_Users.at(fd).getBuffer().find("\r\n") != std::string::npos){
+        std::string cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find(' '));
+        try{
+            if (_command_functions.at(cmd) != NULL)
+                _command_functions.at(cmd)(_Users.at(fd).getBuffer(), fd, _Users, _channels);
+        }
+        catch (std::exception &e){
+            e.what();
+            std::cout << "Command doesn't exist" << std::endl;
+        }
+        _Users.at(fd).clearBuffer();
     }
-//     // check if req is terminated by "\r\n" if not the case, add req to _buffer
-//     // otherwise send to the right function (with i)
-        //if (req)
 //     if (found == std::string::npos)
 //         std::cout << "\tcommand not found" << std::endl; //debug
 //     std::cout << request << std::endl;

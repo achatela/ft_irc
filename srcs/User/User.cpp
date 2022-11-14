@@ -61,7 +61,9 @@
     std::cout << "username ====== " << _username << std::endl;
 }*/
 
-User::User(){};
+User::User(): _access(FORBIDDEN){};
+
+User::User(std::string password) : _access(FORBIDDEN), _real_password(password){};
 
 void User::clearBuffer()
 {

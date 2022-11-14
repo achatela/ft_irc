@@ -3,6 +3,7 @@
 
 # include "utils.hpp"
 # include "Command.hpp"
+# include "Channel.hpp"
 
 class Server{
 
@@ -14,12 +15,14 @@ class Server{
         int _server_listen;
         int _port;
 
-        std::map<std::string, void (*) (std::string buffer, int fd, std::map<int, User > & Users)> _command_functions;
+        std::map<std::string, void (*) (std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels)> _command_functions;
         std::vector<pollfd > _pfds;
         std::string _password;
 
         char _hostname[1024];
         std::map<int, User > _Users;
+
+        std::vector <Channel> _channels;
 
     public:
         Server();
@@ -30,6 +33,8 @@ class Server{
 
         void handleErrors(int ac, char **av);
         void handleRequests(char *request, int j);
+
+        std::string getPassword(){return _password;};
 
         void sondage(); //nom a change
         void addPfd();
