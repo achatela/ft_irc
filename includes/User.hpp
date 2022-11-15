@@ -30,6 +30,10 @@ class User{
         void concatBuffer(std::string buf){_buffer += buf;};
         void clearBuffer();
 
+        std::string getFullHostname(){
+            std::string ret(_nickname + "!" + _username + "@" + _hostname);
+            return ret;
+        }
         std::string getHostname(){return _hostname;};
         void setHostname(std::string hostname){_hostname = hostname; return;};
         std::string getRealPassword(){return _real_password;};

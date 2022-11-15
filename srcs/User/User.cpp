@@ -69,7 +69,8 @@ User::User(std::string password, struct sockaddr_in address) : _access(FORBIDDEN
     if (getnameinfo((struct sockaddr *)&address, sizeof(address), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV) != 0)
         ;
 	else
-		this->_hostname = hostname;
+		setHostname(hostname);
+    std::cout << "=====================" << hostname << std::endl;
 };
 
 void User::clearBuffer()

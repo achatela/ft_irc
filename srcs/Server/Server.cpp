@@ -113,7 +113,7 @@ void Server::handleRequests(char *request, int fd){
                 _command_functions.at(cmd)(_Users.at(fd).getBuffer(), fd, _Users, _channels);
         }
         catch (std::exception &e){
-            e.what();
+            std::cout << e.what() << std::endl;
             std::cout << "Command doesn't exist" << std::endl;
         }
         _Users.at(fd).clearBuffer();
