@@ -51,8 +51,10 @@ void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std
     if (it == channels.end()){
         channels.push_back(Channel());
         channels.back().setChannelName(chan_name);
-        std::cout << "channel" << channels.back().getChannelName() << "created" << std::endl;
     }
+    //confirmation que l'user à join
+    //envoyé le topic (RPL_TOPIC)
+    //Envoyer liste user a celui qui join (RPL_NAMREPLY)
     //it->addUsername
 };
 
@@ -85,13 +87,13 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
     Users.at(fd).getHostname();
 
     if (tmp_user[0] == '#'){
-        std::string toSend2(":" + Users.at(fd).getHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\n");
+        std::string toSend2(":" + Users.at(fd).getHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
         send(fd + 1, toSend2.c_str(), toSend2.length(), 0);
     }
     else if (buffer[0] != 1){
         for (std::map<int, User>::iterator it = Users.begin(); it != Users.end(); it++){
             if (it->second.getNickname() == tmp_user){
-                std::string toSend(":" + Users.at(fd).getHostname() + " MSG " + tmp_user +  " :" + tmp_msg + "\n");
+                std::string toSend(":" + Users.at(fd).getHostname() + " MSG " + tmp_user +  " :" + tmp_msg + "\r\n");
                 send(it->first, toSend.c_str(), toSend.length(), 0);
                 break ;
             }
@@ -113,7 +115,25 @@ void Command::NOTICE(std::string buffer, int fd, std::map<int, User > & Users, s
 void Command::NOTIFY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::OP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::OPER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+
+
+void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+    (void)channels;
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string serv_name(buffer.substr(0, buffer.find(' ')));
+    buffer.erase(0, buffer.find(" :") + 2);
+    std::string leave_msg(buffer.substr(0, buffer.find("\r\n")));
+
+    std::string toSend(":" + Users.at(fd).getHostname() + " PART " + serv_name + " :" + leave_msg + "\r\n");
+    std::cout << toSend << std::endl;
+    //std::string numError(":" + Users.at(fd).getHostname() + " 442 " + serv_name + " :" + "You're not on that channel" + "\n");
+    //std::cout << numError << std::endl;
+    send(fd + 1, toSend.c_str(), toSend.length(), 0);
+    //send(fd, numError.c_str(), numError.length(), 0);
+
+};
+
+
 void Command::PING(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; std::cout << "EEEEEEEEEEEEEEE" << std::endl;return ;};
 void Command::QUERY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -184,7 +204,7 @@ void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std
     buffer = buffer.substr(0, buffer.find("\r\n"));
     for (std::map<int, User >::iterator it = Users.begin() ; it != Users.end(); it++){
         if (it->second.getNickname() == buffer){
-            std::string toSend(":" + Users.at(fd).getHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + buffer + " is already in use !\n");
+            std::string toSend(":" + Users.at(fd).getHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + buffer + " is already in use !\r\n");
             send(fd, toSend.c_str(), toSend.length(), 0);
             return ;
         }
@@ -194,7 +214,7 @@ void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std
     // Check if username is already existing code 433
     if (buffer.find('\b') != std::string::npos || buffer.find('\r') != std::string::npos
         || buffer.find('@') != std::string::npos || buffer.find('\0') != std::string::npos || buffer.find(' ') != std::string::npos){
-            std::string toSend(":" + Users.at(fd).getHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + buffer + " is invalid !\n");
+            std::string toSend(":" + Users.at(fd).getHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + buffer + " is invalid !\r\n");
             send(fd, toSend.c_str(), toSend.length(), 0);
             return ;
     }
@@ -234,7 +254,7 @@ void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std
         }
     }
     if (Users.at(fd).getAccess() == AUTHORIZED){
-        std::string toSend(":" + Users.at(fd).getHostname() + " 001 " + Users.at(fd).getNickname() +  " :Welcome to the Internet Relay Network " + Users.at(fd).getNickname() + " ! " + Users.at(fd).getUsername() + "@" + "\r\n" + Users.at(fd).getHostname() + "\n");
+        std::string toSend(":" + Users.at(fd).getHostname() + " 001 " + Users.at(fd).getNickname() +  " :Welcome to the Internet Relay Network " + Users.at(fd).getNickname() + " ! " + Users.at(fd).getUsername() + "@" + "\r\n" + Users.at(fd).getHostname() + "\r\n");
         send(fd, toSend.c_str(), toSend.length(), 0);
         // std::cout << toSend << std::endl;
     }
@@ -250,6 +270,7 @@ Command::Command(void){
     _commandsFilled["USER"] = USER;
     _commandsFilled["PRIVMSG"] = PRIVMSG;
     _commandsFilled["JOIN"] = JOIN;
+    _commandsFilled["PART"] = PART;
 };
 
 Command::~Command(void){

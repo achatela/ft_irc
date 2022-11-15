@@ -13,6 +13,7 @@
 # include <arpa/inet.h>
 # include <cstring>
 # include <string>
+# include <netdb.h>
 
 # define ON 0
 # define OFF 1

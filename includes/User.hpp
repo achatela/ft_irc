@@ -17,12 +17,12 @@ class User{
         std::string _username;
         std::string _real_name;
         std::string _password;
-        
+        std::string _hostaddr;
         std::string _buffer;
 
     public:
         User();
-        User(std::string password);
+        User(std::string password, struct sockaddr_in address);
         ~User();
 
         std::string getBuffer(){return _buffer;};

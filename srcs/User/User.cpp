@@ -63,7 +63,14 @@
 
 User::User(): _access(FORBIDDEN){};
 
-User::User(std::string password) : _access(FORBIDDEN), _real_password(password){};
+User::User(std::string password, struct sockaddr_in address) : _access(FORBIDDEN), _real_password(password){
+    _hostaddr = inet_ntoa(address.sin_addr);
+    char hostname[NI_MAXHOST];
+    if (getnameinfo((struct sockaddr *)&address, sizeof(address), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV) != 0)
+        ;
+	else
+		this->_hostname = hostname;
+};
 
 void User::clearBuffer()
 {
