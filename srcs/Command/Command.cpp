@@ -84,7 +84,11 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
     std::string tmp_msg(buffer.substr(0, buffer.find("\r\n")));
     Users.at(fd).getHostname();
 
-    if (buffer[0] != 1){
+    if (tmp_user[0] == '#'){
+        std::string toSend2(":" + Users.at(fd).getHostname() + " :" + "Salut" + "\n");
+        send(4, toSend2.c_str(), toSend2.length(), 0);
+    }
+    else if (buffer[0] != 1){
         for (std::map<int, User>::iterator it = Users.begin(); it != Users.end(); it++){
             if (it->second.getNickname() == tmp_user){
                 std::string toSend(":" + Users.at(fd).getHostname() + " MSG " + tmp_user +  " :" + tmp_msg + "\n");
