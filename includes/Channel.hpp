@@ -29,6 +29,16 @@ class Channel{
         void setChannelName(std::string name){_channel_name = name;};
         std::string getChannelMode(){return _channel_mode;};
         void setChannelMode(std::string name){_channel_mode = name;};
+
+        bool isInUserList(std::string name){
+            size_t i = 0;
+            for (;_user_list[i] != name; i++){
+                ;
+            }
+            if (_user_list[i] == name)
+                return true;
+            return false;
+        }
 };
 
 #endif

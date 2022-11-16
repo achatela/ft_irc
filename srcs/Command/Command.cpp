@@ -68,7 +68,6 @@ void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std
         }
     }
     toSend += "\r\n";
-    std::cout << "to send == " << toSend << std::endl;
     std::string toSend2(":" + Users.at(fd).getFullHostname() + " 366 " + Users.at(fd).getNickname() + " " + chan_name + " :End of /NAMES list" + "\r\n");
     std::string toSend3(":" + Users.at(fd).getFullHostname() + " JOIN :" + chan_name + "\r\n");
     send(fd, toSend.c_str(), toSend.length(), 0);
@@ -100,9 +99,57 @@ void Command::MIRCDCC(std::string buffer, int fd, std::map<int, User > & Users, 
 void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
     (void)channels;
     buffer.erase(0, buffer.find(' ') + 1);
-    std::string tmp(buffer.substr(0, buffer.find("\r\n")));
+    std::string tmp(buffer.substr(0, buffer.find(" ")));
+    if (buffer.find(' ') != std::string::npos)
+        buffer.erase(0, buffer.find(' ') + 1);
     if (tmp[0] == '#'){
-        std::string toSend(":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +n\r\n");
+        std::string flags(buffer.substr(0, buffer.find(" ")));
+        size_t space_num = 0;
+        Channel check;
+        int j = getChannel(tmp, channels);
+        if (j == -1){
+            std::cout << "not existing" << std::endl;
+            return ;
+        }
+        else
+            check = channels.at(j);
+        if (flags[0] != '#'){
+            buffer.erase(0, buffer.find(' ') + 1);
+            size_t i = 0;
+            for(; buffer[i] != '\r'; i++){
+                if (buffer[i] == ' ' && buffer[i + 1] != '+')
+                    space_num++;
+            }
+            std::string username[space_num + 1];
+            i = 0;
+            for (; i <= space_num; i++){
+                username[i] += buffer.substr(0, buffer.find(" "));
+                buffer.erase(0, buffer.find(' ') + 1);
+            }
+            i = 0;
+            std::string tmp_send;
+            // 
+            for(; i <= space_num; i++){
+                if (username[i][0] == '+')
+                    break;
+                tmp_send.clear();
+                if (!check.isInUserList(username[i])){
+                    tmp_send += ":" + Users.at(fd).getFullHostname() + " 441 " + Users.at(fd).getNickname() + " " + tmp + " :User not on the channel\r\n";
+                    send(fd, tmp_send.c_str(), tmp_send.length(), 0);
+                }
+                else{
+                    tmp_send += ":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n";
+                    std::cout << i << ":" << " " << tmp_send << std::endl;
+                    send(fd, tmp_send.c_str(), tmp_send.length(), 0);
+                }
+            }
+            if (i < flags.size() - 1){
+                ;
+            }
+
+        }
+        std::string toSend(":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +n\r\n"); // suspect il faut enlever le \n en plein milieu
+        std::cout << "to send = " << toSend << std::endl;
         send(fd, toSend.c_str(), toSend.length(), 0);
     }
 };

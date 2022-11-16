@@ -16,6 +16,17 @@ class Command{
         Command();
         ~Command();
 
+        static int getChannel(std::string chan_name, std::vector<Channel> & channels){
+            int i = 0;
+            std::vector<Channel>::iterator it = channels.begin();
+            for (; it != channels.end() && it->getChannelName() != chan_name; it++){
+                i++;
+            }
+            if (it == channels.end())
+                return -1;
+            return i;
+        }
+
         std::map<std::string, void  (*)(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels)> getCommand(void){return _commandsFilled;};
 
         static void  ACCEPT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
