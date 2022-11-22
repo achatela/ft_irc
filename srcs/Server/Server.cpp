@@ -37,6 +37,7 @@ void Server::addPfd(){
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
     _Users.insert(std::pair<int, User>(sock_fd, User(_password, address/*sock_fd, _password, _hostname*/))); // remove _hostname et changer par celui qu'on recoit dans USER
+    _command_functions["motd"]("motd\r\n", sock_fd, _Users, _channels);
 }
 
 void Server::handleErrors(int ac, char **av){

@@ -16,12 +16,14 @@ class Channel{
         std::vector <int> _fd_list;
         std::vector <std::string> _user_list;
         std::map <int, User > _Users;
-        std::map <std::string, std::string> _Users_modes;
+        std::map <int, std::string> _Users_modes;
 
     public:
 
-        Channel(){;};
+        Channel() : _channel_mode("n"){;};
         ~Channel(){;};
+
+        void pushFdList(int fd){_fd_list.push_back(fd);};
 
         std::vector <int> &getFdList(){return _fd_list;};
         std::vector <std::string> &getUserList(){return _user_list;};
