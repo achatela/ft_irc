@@ -19,6 +19,8 @@ class User{
         std::string _password;
         std::string _hostaddr;
         std::string _buffer;
+        bool        _isAway;
+        std::string _awayMsg;
 
     public:
         User();
@@ -48,6 +50,10 @@ class User{
         std::string getPassword(){return _password;};
         void setPassword(std::string password){_password = password; return;};
         void setRealPassword(std::string realPassword){_real_password = realPassword;};
+        void setIsAway(bool status){_isAway = status;};
+        bool getIsAway(){return _isAway;};
+        void setAwayMsg(std::string msg){_awayMsg = msg;};
+        std::string getAwayMsg(){return _awayMsg;};
 };
 
 #endif

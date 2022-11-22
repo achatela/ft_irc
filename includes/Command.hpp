@@ -32,7 +32,7 @@ class Command{
         static void  ACCEPT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  ACTION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  ADMIN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
-        static void  ALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
+        // static void  ALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  AWAY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  BAN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         // static void  BEEP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
@@ -50,7 +50,7 @@ class Command{
         static void  DEVOICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  DEHILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  DISCONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
-        static void  ECHO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
+        // static void  ECHO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  EVAL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  EXEC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  FLUSHBUFFER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
