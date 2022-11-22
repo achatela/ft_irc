@@ -101,13 +101,13 @@ void Server::sondage(){
 }
 
 void Server::handleRequests(char *request, int fd){
-    std::string cmd;
-
     std::cout << "request = " << request << std::endl;
 
     _Users.at(fd).concatBuffer(request);
     while (_Users.at(fd).getBuffer().find("\r\n") != std::string::npos){
         std::string cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find(' '));
+        if (_Users.at(fd).getBuffer().find(' ') == std::string::npos)
+            cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find("\r\n"));
         try{
             if (_command_functions.at(cmd) != NULL)
                 _command_functions.at(cmd)(_Users.at(fd).getBuffer(), fd, _Users, _channels);

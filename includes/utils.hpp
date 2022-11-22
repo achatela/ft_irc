@@ -18,6 +18,10 @@
 # define ON 0
 # define OFF 1
 
+#ifndef DEBUG
+    #define DEBUG 0
+#endif
+
 # define AUTHORIZED 0
 # define FORBIDDEN 1
 
