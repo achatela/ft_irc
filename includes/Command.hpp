@@ -35,11 +35,11 @@ class Command{
         static void  ALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  AWAY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  BAN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
-        static void  BEEP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
+        // static void  BEEP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  BIND(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         // static void  CAT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         // static void  CD(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
-        static void  CHANNEL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
+        // static void  CHANNEL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         // static void  CLEAR(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  COMPLETION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         // static void  CONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
@@ -57,7 +57,7 @@ class Command{
         static void  FOREACH(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  FORMAT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  HASH(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
-        static void  HELP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
+        // static void  HELP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  HILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  IGNORE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  INFO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
