@@ -20,6 +20,8 @@ class User{
         std::string _hostaddr;
         std::string _buffer;
         bool        _isAway;
+        bool        _isConnected;
+        std::string _usermode;
         std::string _awayMsg;
 
     public:
@@ -32,8 +34,15 @@ class User{
         void concatBuffer(std::string buf){_buffer += buf;};
         void clearBuffer();
 
+        void setIsConnected(bool status){_isConnected = status;};
+        bool getIsConnected(){return _isConnected;};
+
         std::string getFullHostname(){
             std::string ret(_nickname + "!" + _username + "@" + _hostname);
+            return ret;
+        }
+        std::string getFullInfo(){
+            std::string ret(_username + "!" + _username + "@" + _hostname);
             return ret;
         }
         std::string getHostname(){return _hostname;};
@@ -54,6 +63,8 @@ class User{
         bool getIsAway(){return _isAway;};
         void setAwayMsg(std::string msg){_awayMsg = msg;};
         std::string getAwayMsg(){return _awayMsg;};
+
+        // bool operator!= (User &tmp){return (getFullInfo() == tmp.getFullInfo());}
 };
 
 #endif

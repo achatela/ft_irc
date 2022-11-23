@@ -29,6 +29,7 @@ class Command{
 
         std::map<std::string, void  (*)(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels)> getCommand(void){return _commandsFilled;};
 
+        static void reply(std::string cmd, int fd, std::string msg);
         static void  ACCEPT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         // static void  ACTION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  ADMIN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);

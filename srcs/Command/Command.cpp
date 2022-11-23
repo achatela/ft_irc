@@ -1,18 +1,22 @@
 #include "../../includes/Command.hpp"
 
-void Command::ACCEPT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::reply(std::string cmd, int fd, std::string msg){
+    std::cout << YELLOW << cmd << MAGENTA << ">>" << CYAN <<  "[" << fd << "] " << BLUE << msg << RESET;
+}
+
+void Command::ACCEPT(std::string, int fd, std::map<int, User > &, std::vector<Channel> &){
     std::string toSend("Unknown command: ACCEPT\r\n");
     send(fd, toSend.c_str(), toSend.length(), 0);
 
-    if (DEBUG == 1)
-        std::cout << "Accept sent " << toSend << std::endl;
+    if (DEBUG)
+        reply("ACCEPT", fd, toSend);
 };
 
 
 // void Command::ACTION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::ADMIN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::ADMIN(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     std::string toSendFirst(":" + Users.at(fd).getFullHostname() + " 256 " + Users.at(fd).getNickname() + " ClownRC " + ":Administrative info\r\n");
     std::string toSendSecond(":" + Users.at(fd).getFullHostname() + " 257 " + Users.at(fd).getNickname() + " :You're on ClownRC, our server is hosted in France and is accesible with the following url FAUT QUON LA SET\r\n"); //URL a define
     std::string toSendThird(":" + Users.at(fd).getFullHostname() + " 258 " + Users.at(fd).getNickname() + " :If you need any information relating our project fell free to contact us\r\n");
@@ -23,8 +27,11 @@ void Command::ADMIN(std::string buffer, int fd, std::map<int, User > & Users, st
     send(fd, toSendThird.c_str(), toSendThird.length(), 0);
     send(fd, toSendForth.c_str(), toSendForth.length(), 0);
 
-    if (DEBUG == 1){
-        std::cout << "Admin sent\n" << toSendFirst << std::endl << toSendSecond << std::endl << toSendThird << std::endl << toSendForth << std::endl;
+    if (DEBUG){
+        reply("ADMIN", fd, toSendFirst);
+        reply("ADMIN", fd, toSendSecond);
+        reply("ADMIN", fd, toSendThird);
+        reply("ADMIN", fd, toSendForth);
     }
 };
 
@@ -32,18 +39,17 @@ void Command::ADMIN(std::string buffer, int fd, std::map<int, User > & Users, st
 // void Command::ALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::AWAY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::AWAY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     buffer.erase(0, buffer.find(' ') + 2);
     std::string away_msg(buffer.substr(0, buffer.find("\r\n")));
-    (void)away_msg;
 
     std::string toSend(":" + Users.at(fd).getFullHostname() + " 306 " + Users.at(fd).getNickname() + " :You have been marked as begin away\r\n");
     send(fd, toSend.c_str(), toSend.length(), 0);
     Users.at(fd).setIsAway(true);
     Users.at(fd).setAwayMsg(away_msg);
-    if (DEBUG == 1){
-        std::cout << "Debug sent " << std::endl << toSend << std::endl;
-        std::cout << "Away msg is " << Users.at(fd).getAwayMsg() << std::endl;
+    if (DEBUG){
+        reply("AWAY", fd, toSend);
+        reply("AWAY", fd, Users.at(fd).getAwayMsg());
     }
 };
 
@@ -76,41 +82,53 @@ void Command::HILIGHT(std::string buffer, int fd, std::map<int, User > & Users, 
 void Command::IGNORE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::INFO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::INFO(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+    std::string debug_str;
     std::string toSend(":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :------------------INFO------------------\r\n"); //URL a define
     send(fd, toSend.c_str(), toSend.length(), 0);
 
+    debug_str += toSend;
     toSend.clear();
     toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Server name ClownRC / URL A DEFINE\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
 
+    debug_str += toSend;
     toSend.clear();
     toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Version : 1.0\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
 
+    debug_str += toSend;
     toSend.clear();
     toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Made by the two original clowns:\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
 
+    debug_str += toSend;
     toSend.clear();
     toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :- achatela <achatela@student.42.fr>\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
 
+    debug_str += toSend;
     toSend.clear();
     toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :- hcarpent <hcarpent@student.42.fr>\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
 
+    debug_str += toSend;
     toSend.clear();
     toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + ":\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
 
+    debug_str += toSend;
     toSend.clear();
     toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Thanks for using ClownRC !\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
 
+    debug_str += toSend;
     toSend.clear();
     toSend += ":" + Users.at(fd).getFullHostname() + " 374 " + Users.at(fd).getNickname() + " :End of /INFO list\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
+    debug_str += toSend;
+    if (DEBUG)
+        reply("INFO", fd, debug_str);
 };
 
 
@@ -120,8 +138,6 @@ void Command::ISO(std::string buffer, int fd, std::map<int, User > & Users, std:
 
 
 void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)fd;
-    (void)Users;
     buffer.erase(0, buffer.find(' ') + 1);
     std::string chan_name(buffer.substr(0, buffer.find("\r\n")));
     std::vector<Channel>::iterator it = channels.begin();
@@ -155,6 +171,11 @@ void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std
     send(fd, toSend.c_str(), toSend.length(), 0);
     send(fd, toSend2.c_str(), toSend2.length(), 0);
     send(fd, toSend3.c_str(), toSend3.length(), 0);
+    if (DEBUG){
+        reply("JOIN", fd, toSend);
+        reply("JOIN", fd, toSend2);
+        reply("JOIN", fd, toSend3);
+    }
     //confirmation que l'user à join
     //envoyé le topic (RPL_TOPIC)
     //Envoyer liste user a celui qui join (RPL_NAMREPLY)
@@ -179,7 +200,6 @@ void Command::MIRCDCC(std::string buffer, int fd, std::map<int, User > & Users, 
 
 
 void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)channels;
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     if (buffer.find(' ') != std::string::npos)
@@ -218,11 +238,15 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
                 if (!check.isInUserList(username[i])){
                     tmp_send += ":" + Users.at(fd).getFullHostname() + " 441 " + Users.at(fd).getNickname() + " " + tmp + " :User not on the channel\r\n";
                     send(fd, tmp_send.c_str(), tmp_send.length(), 0);
+                    if (DEBUG)
+                       reply("MODE", fd, tmp_send);
                 }
                 else{
                     tmp_send += ":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n";
                     std::cout << i << ":" << " " << tmp_send << std::endl;
                     send(fd, tmp_send.c_str(), tmp_send.length(), 0);
+                    if (DEBUG)
+                       reply("MODE", fd, tmp_send);
                 }
             }
             if (i < flags.size() - 1){
@@ -236,10 +260,7 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
 };
 
 
-void Command::MOTD(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){ // changer (ouvrir un fichier conf/ircd.motd)
-    (void)Users;
-    (void)buffer;
-    (void)channels;
+void Command::MOTD(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){ // changer (ouvrir un fichier conf/ircd.motd)
     std::string toSendFirst(":" + Users.at(fd).getFullHostname() + " 375 " + Users.at(fd).getNickname() + " :- ClownRC Message of the day\r\n");
     send(fd, toSendFirst.c_str(), toSendFirst.length(), 0);
 
@@ -297,16 +318,15 @@ void Command::MOTD(std::string buffer, int fd, std::map<int, User > & Users, std
 
     std::string toSendLast(":" + Users.at(fd).getFullHostname() + " 376 " + Users.at(fd).getNickname() + " :End of /MOTD command\r\n");
     send(fd, toSendLast.c_str(), toSendLast.length(), 0);
-    if (DEBUG == 1){
-        std::cout << "MOTD sent " << toSendFirst << std::endl;
-        std::cout << toSend << std::endl << toSendLast << std::endl;
+    if (DEBUG){
+        reply("MOTD", fd, toSendFirst);
+        reply("MOTD", fd, toSendLast);
     }
 };
 
 
 
 void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)channels;
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
     buffer.erase(0, buffer.find(" :") + 2);
@@ -323,8 +343,8 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
         if (it == Users.end()){
             std::string tmp_error(":" + Users.at(fd).getFullHostname() + " 401 " + Users.at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
             send(fd, tmp_error.c_str(), tmp_error.length(), 0);
-            if (DEBUG == 1){
-                std::cout << "PRIVMSG sent" << tmp_error << std::endl;
+            if (DEBUG){
+                reply("PRIVMSG", fd, tmp_error);
             }
         }
     }
@@ -350,8 +370,8 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
                 send(list_fd[i], toSend2.c_str(), toSend2.length(), 0); // envoyer à tous les fd
             i++;
         }
-        if (DEBUG == 1){
-            std::cout << "PRIVMSG sent" << toSend2 << std::endl;
+        if (DEBUG){
+            reply("PRIVMSG", fd, toSend2);
         }
     }
     else {//if (buffer[0] != 1){
@@ -379,7 +399,7 @@ void Command::NETWORK(std::string buffer, int fd, std::map<int, User > & Users, 
 //void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (voidfd; (void)Users, (void)channels; return;};
 
 
-void Command::NOTICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::NOTICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     std::string toSend(":" + Users.at(fd).getFullHostname() + " " + buffer + "\r\n");
 
     buffer.erase(0, buffer.find(' ') + 1);
@@ -395,8 +415,8 @@ void Command::NOTICE(std::string buffer, int fd, std::map<int, User > & Users, s
 
     send(it->first, toSend.c_str(), toSend.length(), 0);
 
-    if (DEBUG == 1){
-        std::cout << "NOTICE sent " << toSend << std::endl;
+    if (DEBUG){
+        reply("NOTICE", fd, toSend);
     }
 };
 
@@ -407,7 +427,6 @@ void Command::OPER(std::string buffer, int fd, std::map<int, User > & Users, std
 
 
 void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)channels;
     buffer.erase(0, buffer.find(' ') + 1);
     std::string serv_name(buffer.substr(0, buffer.find("\r\n")));
 
@@ -446,15 +465,15 @@ void Command::PING(std::string buffer, int fd, std::map<int, User > & Users, std
 void Command::QUERY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)channels;
+void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string leave_msg(buffer.substr(0, buffer.find("\r\n")));
 
     std::string toSend(":" + Users.at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
+    Users.at(fd).setIsConnected(false);
     send(fd, toSend.c_str(), toSend.length(), 0);
-    if (DEBUG == 1)
-        std::cout << "Quit sent " << toSend << std::endl;
+    if (DEBUG)
+        reply("QUIT", fd, toSend);
 };
 
 
@@ -505,8 +524,7 @@ void Command::WALL(std::string buffer, int fd, std::map<int, User > & Users, std
 void Command::WALLOPS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::WHO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)channels;
+void Command::WHO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find("\r\n")));
 
@@ -521,43 +539,48 @@ void Command::WHOIS(std::string buffer, int fd, std::map<int, User > & Users, st
 void Command::WHOWAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::WINDOW(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
-void Command::PASS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)channels;
+void Command::PASS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     buffer.erase(0, buffer.find(' ') + 1);
     Users.at(fd).setPassword(buffer.substr(0, buffer.find("\r\n")));
     // if (Users.at(fd).getPassword()[Users.at(fd).getPassword().length() - 1] == '\r')
     //     Users.at(fd).getPassword().erase(0, Users.at(fd).getPassword().end() - 1);
     if (Users.at(fd).getPassword() != Users.at(fd).getRealPassword())
         Users.at(fd).setAccess(FORBIDDEN);
-    std::cout << "password: " << Users.at(fd).getPassword() << std::endl;
+    if (DEBUG)
+    ;
+        // std::cout << "password: " << Users.at(fd).getPassword() << std::endl;
     return;
 }
-void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)channels;
+
+
+void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     buffer.erase(0, buffer.find(' ') + 1);
     buffer = buffer.substr(0, buffer.find("\r\n"));
-    for (std::map<int, User >::iterator it = Users.begin() ; it != Users.end(); it++){
-        if (it->second.getNickname() == buffer){
-            std::string toSend(":" + Users.at(fd).getFullHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + buffer + " is already in use !\r\n");
-            send(fd, toSend.c_str(), toSend.length(), 0);
-            return ;
-        }
-    }
-    // if (Users.at(fd).getNickname()[Users.at(fd).getNickname().length() - 1] == '\r')
-    //     Users.at(fd).getNickname().erase(0, Users.at(fd).getNickname().end() - 1);
-    // Check if username is already existing code 433
     if (buffer.find('\b') != std::string::npos || buffer.find('\r') != std::string::npos
         || buffer.find('@') != std::string::npos || buffer.find('\0') != std::string::npos || buffer.find(' ') != std::string::npos){
             std::string toSend(":" + Users.at(fd).getFullHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + buffer + " is invalid !\r\n");
             send(fd, toSend.c_str(), toSend.length(), 0);
             return ;
     }
+    for (std::map<int, User >::iterator it = Users.begin() ; it != Users.end(); it++){
+        if (it->second.getNickname() == buffer){
+            std::string toSend(": 433 * " + buffer + " :Nickname is already in use\r\n");
+            send(fd, toSend.c_str(), toSend.length(), 0);
+            if (DEBUG)
+                reply("NICK", fd, toSend);
+            return ;
+        }
+    } 
     Users.at(fd).setNickname(buffer);
-    std::cout << "nickname: " << Users.at(fd).getNickname() << std::endl;
+    std::string toSend2(": NICK :" + buffer + "\r\n");
+    send(fd, toSend2.c_str(), toSend2.length(), 0);
+    if (DEBUG)
+        reply("NICK", fd, toSend2);
     return;
 }
-void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
-    (void)channels;
+
+
+void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     buffer.erase(0, buffer.find(' ') + 1);
     Users.at(fd).setUsername(buffer.substr(0, buffer.find(' ')));
     buffer.erase(0, buffer.find(' ') + 1);
@@ -570,9 +593,11 @@ void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std
     //     Users.at(fd).getUsername().erase(0, Users.at(fd).getUsername().end() - 1);
     // if (Users.at(fd).getRealName()[Users.at(fd).getRealName().length() - 1] == '\r')
     //     Users.at(fd).getRealName().erase(0, Users.at(fd).getRealName().end() - 1);
-    std::cout << "username: " << Users.at(fd).getUsername() << std::endl;
-    std::cout << "hostname: " << Users.at(fd).getHostname() << std::endl;
-    std::cout << "real_name: " << Users.at(fd).getRealName() << std::endl;
+    if (DEBUG){
+        // std::cout << "username: " << Users.at(fd).getUsername() << std::endl;
+        // std::cout << "hostname: " << Users.at(fd).getHostname() << std::endl;
+        // std::cout << "real_name: " << Users.at(fd).getRealName() << std::endl;
+    }
     if ((Users.at(fd).getBuffer().empty() || Users.at(fd).getHostname().empty() || Users.at(fd).getNickname().empty()
         ||  Users.at(fd).getPassword().empty() || Users.at(fd).getRealName().empty() || Users.at(fd).getUsername().empty()))
         Users.at(fd).setAccess(FORBIDDEN);
@@ -588,11 +613,27 @@ void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std
         }
     }
     if (Users.at(fd).getAccess() == AUTHORIZED){
+
+        // std::map<int, User >::iterator it = Users.begin();
+        // for (; it != Users.end(); it++){
+        //     if (it->first != fd && it->second.getFullInfo() == Users.at(fd).getFullInfo())
+        //         break;
+        // }
+        // if (it != Users.end()){
+        //     if (it->second.getIsConnected() == true){
+        //         std::string toSend(":" + Users.at(fd).getFullHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + Users.at(fd).getNickname() + " is already in use !\r\n");
+        //         send(fd, toSend.c_str(), toSend.length(), 0);
+        //         Users.at(fd).setAccess(FORBIDDEN);
+        //         return ;
+        //     }
+        //     else
+        //         std::cout << "User disconncted" << std::endl;
+        // }
+
         std::string toSend(":" + Users.at(fd).getFullHostname() + " 001 " + Users.at(fd).getNickname() +  " :Welcome to the Internet Relay Network " + Users.at(fd).getNickname() + " ! " + Users.at(fd).getUsername() + "@" + "\r\n" + Users.at(fd).getHostname() + "\r\n");
         send(fd, toSend.c_str(), toSend.length(), 0);
         // std::cout << toSend << std::endl;
     }
-    
     return;
 }
 

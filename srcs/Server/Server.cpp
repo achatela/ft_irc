@@ -37,7 +37,7 @@ void Server::addPfd(){
     _pfds.back().fd = sock_fd;
     _pfds.back().events = POLLIN;
     _Users.insert(std::pair<int, User>(sock_fd, User(_password, address/*sock_fd, _password, _hostname*/))); // remove _hostname et changer par celui qu'on recoit dans USER
-    _command_functions["motd"]("motd\r\n", sock_fd, _Users, _channels);
+    //_command_functions["motd"]("motd\r\n", sock_fd, _Users, _channels);
 }
 
 void Server::handleErrors(int ac, char **av){
@@ -61,11 +61,11 @@ void Server::handleErrors(int ac, char **av){
 
 void Server::sondage(){
 
-    char server_reply[4096];
+    char server_reply[512];
     
     // std::cout << _Users.size() << std::endl;
     
-    if (poll(&_pfds[0], _pfds.size(), 1000) == -1){
+    if (poll(&_pfds[0], _pfds.size(), 0) == -1){
         return;
     }
     if (_pfds[0].revents == POLLIN){
@@ -77,8 +77,9 @@ void Server::sondage(){
         {
             if (it->revents == POLLIN)
             {
-                if (recv(it->fd, server_reply, 4096, 0) == 0)
+                if (recv(it->fd, server_reply, 512, MSG_DONTWAIT) == 0)
                 {
+                    std::cout << "devrait supprimer" << std::endl;
                     int i = it - _pfds.begin();
                     std::map<int, User>::iterator it2 = _Users.begin();
                     while (i - 1 > 0){
@@ -98,31 +99,32 @@ void Server::sondage(){
         }
     }
     //std::cout << "\terver_reply before reset = " << server_reply << std::endl;
-    memset(server_reply, 0, 4096);
+    memset(server_reply, 0, 512);
 }
 
 void Server::handleRequests(char *request, int fd){
-    std::cout << "request = " << request << std::endl;
+    if (DEBUG)
+        std::cout << YELLOW << "Server" << MAGENTA "<< " << CYAN << "[" << fd << "] " << GREEN << request << RESET;
 
-    _Users.at(fd).concatBuffer(request);
-    while (_Users.at(fd).getBuffer().find("\r\n") != std::string::npos){
-        std::string cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find(' '));
-        if (_Users.at(fd).getBuffer().find(' ') == std::string::npos)
-            cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find("\r\n"));
-        try{
-            if (_command_functions.at(cmd) != NULL)
-                _command_functions.at(cmd)(_Users.at(fd).getBuffer(), fd, _Users, _channels);
+    try{
+        _Users.at(fd).concatBuffer(request);
+        while (_Users.at(fd).getBuffer().find("\r\n") != std::string::npos){
+            std::string cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find(' '));
+            if (_Users.at(fd).getBuffer().find(' ') == std::string::npos)
+                cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find("\r\n"));
+            try{
+                if (_command_functions.at(cmd) != NULL)
+                    _command_functions.at(cmd)(_Users.at(fd).getBuffer(), fd, _Users, _channels);
+            }
+            catch (std::exception &e){
+                // std::cout << e.what() << std::endl;
+                // std::cout << "Command doesn't exist" << std::endl;
+            }
+            _Users.at(fd).clearBuffer();
         }
-        catch (std::exception &e){
-            std::cout << e.what() << std::endl;
-            std::cout << "Command doesn't exist" << std::endl;
-        }
-        _Users.at(fd).clearBuffer();
     }
-//     if (found == std::string::npos)
-//         std::cout << "\tcommand not found" << std::endl; //debug
-//     std::cout << request << std::endl;
-
-    //if _buffer is terminated by "\r\n" reset buffer
+    catch (std::exception &e){
+        e.what();
+    }
 }
 
