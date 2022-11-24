@@ -103,12 +103,11 @@ void Server::sondage(){
 }
 
 void Server::handleRequests(char *request, int fd){
-    if (DEBUG)
-        std::cout << YELLOW << "Server" << MAGENTA "<< " << CYAN << "[" << fd << "] " << GREEN << request << RESET;
-
     try{
         _Users.at(fd).concatBuffer(request);
         while (_Users.at(fd).getBuffer().find("\r\n") != std::string::npos){
+            if (DEBUG)
+                std::cout << YELLOW << "Server" << GREEN " << " << CYAN << "[" << fd << "] " << GREEN << _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find("\r\n") + 2) << RESET;
             std::string cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find(' '));
             if (_Users.at(fd).getBuffer().find(' ') == std::string::npos)
                 cmd = _Users.at(fd).getBuffer().substr(0, _Users.at(fd).getBuffer().find("\r\n"));

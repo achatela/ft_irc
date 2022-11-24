@@ -2,13 +2,19 @@
 
 void Command::reply(int fd, std::string full_host_name, std::string reply_type, std::string nickname, std::string msg){
     std::string toSend;
-    if (msg.empty())
-        toSend = ":" + full_host_name + reply_type + nickname + "\r\n";
+    if (full_host_name.empty() && nickname.empty())
+        toSend = ": " + reply_type + " :" + msg + "\r\n";
+    else if (full_host_name.empty())
+        toSend = ": " + reply_type + " " + nickname + " :" + msg + "\r\n";
+    else if (nickname.empty())
+        toSend = ":" + full_host_name + " " + reply_type + " :" + msg + "\r\n";
+    else if (msg.empty())
+        toSend = ":" + full_host_name + " " + reply_type + " " + nickname + "\r\n";
     else
-        toSend = ":" + full_host_name + reply_type + nickname +  " :" + msg + "\r\n";
+        toSend = ":" + full_host_name + " " + reply_type + " " + nickname + " :" + msg + "\r\n";
     send(fd, toSend.c_str(), toSend.length(), 0);
     if (DEBUG)
-        std::cout << YELLOW <<  "Server" << MAGENTA << " >> " << CYAN <<  "[" << fd << "] " << BLUE << toSend << RESET;
+        std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
 }
 
 void Command::ACCEPT(std::string, int fd, std::map<int, User > &, std::vector<Channel> &){
@@ -95,7 +101,7 @@ void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std
     for (; it != channels.end(); it++){
         if (it->getChannelName() == chan_name){
             for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
-                reply(*ite, Users.at(fd).getFullHostname(), "JOIN", NULL, chan_name); // envoyer le putain
+                reply(*ite, Users.at(fd).getFullHostname(), "JOIN", "", chan_name); // envoyer le putain
             }
             break;
         }
@@ -116,7 +122,7 @@ void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std
     }
     reply(fd, Users.at(fd).getFullHostname(), "353", Users.at(fd).getNickname() + " = " + chan_name, msg);
     reply(fd, Users.at(fd).getFullHostname(), "366", Users.at(fd).getNickname() + " " + chan_name, "End of /NAMES list");
-    reply(fd, Users.at(fd).getFullHostname(), "JOIN", NULL, chan_name);
+    reply(fd, Users.at(fd).getFullHostname(), "JOIN", "", chan_name);
     //confirmation que l'user à join
     //envoyé le topic (RPL_TOPIC)
     //Envoyer liste user a celui qui join (RPL_NAMREPLY)
@@ -151,7 +157,6 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
         Channel check;
         int j = getChannel(tmp, channels);
         if (j == -1){
-            std::cout << "not existing" << std::endl;
             return ;
         }
         else
@@ -179,14 +184,14 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
                     reply(fd, Users.at(fd).getFullHostname(), "441", Users.at(fd).getNickname() + " " + tmp, "User not on the channel");
                 }
                 else{
-                    reply(fd, Users.at(fd).getFullHostname(), "324", Users.at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i], NULL);
+                    reply(fd, Users.at(fd).getFullHostname(), "324", Users.at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i], "");
                 }
             }
             if (i < flags.size() - 1){
                 ;
             }
         }
-        reply(fd, Users.at(fd).getFullHostname(), "324", Users.at(fd).getNickname() + " " + tmp + " +n", NULL);
+        reply(fd, Users.at(fd).getFullHostname(), "324", Users.at(fd).getNickname() + " " + tmp + " +n", "");
 
     }
 };
@@ -231,13 +236,11 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
             it++;
         }
         if (it == Users.end()){
-        reply(fd, Users.at(fd).getFullHostname(), "401", Users.at(fd).getNickname() + " " + tmp_user, "No such nick/channel");
-
+            reply(fd, Users.at(fd).getFullHostname(), "401", Users.at(fd).getNickname() + " " + tmp_user, "No such nick/channel");
         }
     }
 
     if (tmp_user[0] == '#'){
-        std::string toSend2(":" + Users.at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
         std::vector<Channel>::iterator it = channels.begin();
 
         while (it != channels.end()){
@@ -249,28 +252,18 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
             std::cout << "possible ? " << std::endl;
         }
 
-        std::vector<int> list_fd = it->getFdList();
-
-        size_t i = 0;
-        while (i != list_fd.size()){
-            if (list_fd[i] != fd)
-                send(list_fd[i], toSend2.c_str(), toSend2.length(), 0); // envoyer à tous les fd
-            i++;
-        }
-        if (DEBUG){
-            reply("PRIVMSG", fd, toSend2);
+        for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
+            if (*ite != fd)
+                reply(*ite, Users.at(fd).getFullHostname(), "PRIVMSG", tmp_user, tmp_msg); // envoyer à tous les fd
         }
     }
     else {//if (buffer[0] != 1){
         for (std::map<int, User>::iterator it = Users.begin(); it != Users.end(); it++){
             if (it->second.getNickname() == tmp_user){
                 if (Users.at(it->first).getIsAway() == true){
-                    std::string tmp(":" + Users.at(it->first).getFullHostname() + " 301 " + Users.at(fd).getNickname() + " " + tmp_user + " :" + Users.at(it->first).getAwayMsg() + "\r\n");
-                    send(fd, tmp.c_str(), tmp.length(), 0);
+                    reply(fd, Users.at(fd).getFullHostname(), "301", Users.at(fd).getNickname(), Users.at(it->first).getAwayMsg());
                 }
-                std::string toSend(":" + Users.at(fd).getFullHostname() + " PRIVMSG " + tmp_user +  " :" + tmp_msg + "\r\n");
-                std::cout << "to send = " << toSend << std::endl;
-                send(it->first, toSend.c_str(), toSend.length(), 0);
+                reply(fd, Users.at(fd).getFullHostname(), "PRIVMSG", tmp_user, tmp_msg);
                 break ;
             }
         }
@@ -287,8 +280,6 @@ void Command::NETWORK(std::string buffer, int fd, std::map<int, User > & Users, 
 
 
 void Command::NOTICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
-    std::string toSend(":" + Users.at(fd).getFullHostname() + " " + buffer + "\r\n");
-
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
 
@@ -299,12 +290,7 @@ void Command::NOTICE(std::string buffer, int fd, std::map<int, User > & Users, s
             break;
         it++;
     }
-
-    send(it->first, toSend.c_str(), toSend.length(), 0);
-
-    if (DEBUG){
-        reply("NOTICE", fd, toSend);
-    }
+    reply(it->first, Users.at(fd).getFullHostname(), "NOTICE", buffer, "");
 };
 
 
@@ -319,7 +305,6 @@ void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std
 
     std::vector<Channel>::iterator it = channels.begin();
     for (; it != channels.end(); it++){
-        std::cout << it->getChannelName() << std::endl;
         if (it->getChannelName() == serv_name)
             break;
     }
@@ -336,12 +321,9 @@ void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std
             break;
         }
     }
-    std::string toSend(":" + Users.at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    std::cout << toSend << std::endl;
-    std::vector <int> tmp_fd2 = it->getFdList();
-    for (size_t i = 0; i < tmp_fd2.size(); i++){
-            send(tmp_fd2[i], toSend.c_str(), toSend.length(), 0);
+    reply(fd, Users.at(fd).getFullHostname(), "PART", serv_name, "");
+    for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
+        reply(*ite, Users.at(fd).getFullHostname(), "PART", serv_name, "");
     }
     if (it->getFdList().empty())
         channels.erase(it);
@@ -356,11 +338,9 @@ void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std
     buffer.erase(0, buffer.find(' ') + 1);
     std::string leave_msg(buffer.substr(0, buffer.find("\r\n")));
 
-    std::string toSend(":" + Users.at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
     Users.at(fd).setIsConnected(false);
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    if (DEBUG)
-        reply("QUIT", fd, toSend);
+    reply(fd, Users.at(fd).getFullHostname(), "QUIT", "", "QUIT" + leave_msg);
+    
 };
 
 
@@ -416,8 +396,7 @@ void Command::WHO(std::string buffer, int fd, std::map<int, User > & Users, std:
     std::string tmp(buffer.substr(0, buffer.find("\r\n")));
 
     if (tmp[0] == '#'){
-        std::string toSend(":" + Users.at(fd).getFullHostname() + " 315 " + Users.at(fd).getNickname() + " " + Users.at(fd).getUsername() + " :End of /WHO list\r\n");
-        send(fd, toSend.c_str(), toSend.length(), 0);
+        reply(fd, Users.at(fd).getFullHostname(), "315", Users.at(fd).getNickname() + " " + Users.at(fd).getUsername(), "End of /WHO list");
     }
 };
 
@@ -433,9 +412,7 @@ void Command::PASS(std::string buffer, int fd, std::map<int, User > & Users, std
     //     Users.at(fd).getPassword().erase(0, Users.at(fd).getPassword().end() - 1);
     if (Users.at(fd).getPassword() != Users.at(fd).getRealPassword())
         Users.at(fd).setAccess(FORBIDDEN);
-    if (DEBUG)
-    ;
-        // std::cout << "password: " << Users.at(fd).getPassword() << std::endl;
+    // std::cout << "password: " << Users.at(fd).getPassword() << std::endl;
     return;
 }
 
@@ -445,24 +422,17 @@ void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std
     buffer = buffer.substr(0, buffer.find("\r\n"));
     if (buffer.find('\b') != std::string::npos || buffer.find('\r') != std::string::npos
         || buffer.find('@') != std::string::npos || buffer.find('\0') != std::string::npos || buffer.find(' ') != std::string::npos){
-            std::string toSend(":" + Users.at(fd).getFullHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + buffer + " is invalid !\r\n");
-            send(fd, toSend.c_str(), toSend.length(), 0);
+            reply(fd, Users.at(fd).getFullHostname(), "432", Users.at(fd).getNickname(), "Nickname " + buffer + " is invalid !");
             return ;
     }
     for (std::map<int, User >::iterator it = Users.begin() ; it != Users.end(); it++){
         if (it->second.getNickname() == buffer){
-            std::string toSend(": 433 * " + buffer + " :Nickname is already in use\r\n");
-            send(fd, toSend.c_str(), toSend.length(), 0);
-            if (DEBUG)
-                reply("NICK", fd, toSend);
+            reply(fd, "", "433", "* " + buffer , "Nickname is already in use");
             return ;
         }
     }
     Users.at(fd).setNickname(buffer);
-    std::string toSend2(": NICK :" + buffer + "\r\n");
-    send(fd, toSend2.c_str(), toSend2.length(), 0);
-    if (DEBUG)
-        reply("NICK", fd, toSend2);
+    reply(fd, "", "NICK", "" , buffer);
     return;
 }
 
@@ -517,8 +487,7 @@ void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std
         //         std::cout << "User disconncted" << std::endl;
         // }
 
-        std::string toSend(":" + Users.at(fd).getFullHostname() + " 001 " + Users.at(fd).getNickname() +  " :Welcome to the Internet Relay Network " + Users.at(fd).getFullHostname() + "\r\n");
-        send(fd, toSend.c_str(), toSend.length(), 0);
+        reply(fd, Users.at(fd).getFullHostname(), "001", Users.at(fd).getNickname(), "Welcome to the Internet Relay Network " + Users.at(fd).getFullHostname());
         // std::cout << toSend << std::endl;
     }
     return;
