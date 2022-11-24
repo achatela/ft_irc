@@ -410,8 +410,6 @@ void Command::PASS(std::string buffer, int fd, std::map<int, User > & Users, std
     Users.at(fd).setPassword(buffer.substr(0, buffer.find("\r\n")));
     // if (Users.at(fd).getPassword()[Users.at(fd).getPassword().length() - 1] == '\r')
     //     Users.at(fd).getPassword().erase(0, Users.at(fd).getPassword().end() - 1);
-    if (Users.at(fd).getPassword() != Users.at(fd).getRealPassword())
-        Users.at(fd).setAccess(FORBIDDEN);
     // std::cout << "password: " << Users.at(fd).getPassword() << std::endl;
     return;
 }
@@ -455,21 +453,21 @@ void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std
         // std::cout << "hostname: " << Users.at(fd).getHostname() << std::endl;
         // std::cout << "real_name: " << Users.at(fd).getRealName() << std::endl;
     }
-    if ((Users.at(fd).getBuffer().empty() || Users.at(fd).getHostname().empty() || Users.at(fd).getNickname().empty()
-        ||  Users.at(fd).getPassword().empty() || Users.at(fd).getRealName().empty() || Users.at(fd).getUsername().empty()))
-        Users.at(fd).setAccess(FORBIDDEN);
-    else{
-        if (Users.at(fd).getRealPassword().empty())
-            Users.at(fd).setAccess(AUTHORIZED);
-        else{
-            if (Users.at(fd).getPassword() != Users.at(fd).getRealPassword()){
-                Users.at(fd).setAccess(FORBIDDEN);
-            }
-            else
-                Users.at(fd).setAccess(AUTHORIZED);
-        }
-    }
-    if (Users.at(fd).getAccess() == AUTHORIZED){
+    // if ((Users.at(fd).getBuffer().empty() || Users.at(fd).getHostname().empty() || Users.at(fd).getNickname().empty()
+    //     ||  Users.at(fd).getPassword().empty() || Users.at(fd).getRealName().empty() || Users.at(fd).getUsername().empty()))
+    //     Users.at(fd).setAccess(FORBIDDEN);
+    // else{
+    //     if (Users.at(fd).getRealPassword().empty())
+    //         Users.at(fd).setAccess(AUTHORIZED);
+    //     else{
+    //         if (Users.at(fd).getPassword() != Users.at(fd).getRealPassword()){
+    //             Users.at(fd).setAccess(FORBIDDEN);
+    //         }
+    //         else
+    //             Users.at(fd).setAccess(AUTHORIZED);
+    //     }
+    // }
+    // if (Users.at(fd).getAccess() == AUTHORIZED){
 
         // std::map<int, User >::iterator it = Users.begin();
         // for (; it != Users.end(); it++){
@@ -487,9 +485,10 @@ void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std
         //         std::cout << "User disconncted" << std::endl;
         // }
 
-        reply(fd, Users.at(fd).getFullHostname(), "001", Users.at(fd).getNickname(), "Welcome to the Internet Relay Network " + Users.at(fd).getFullHostname());
+        //reply(fd, Users.at(fd).getFullHostname(), "001", Users.at(fd).getNickname(), "Welcome to the Internet Relay Network " + Users.at(fd).getFullHostname());
         // std::cout << toSend << std::endl;
-    }
+    //}
+    //reply(fd, Users.at(fd).getFullHostname(), "001", Users.at(fd).getNickname(), "Welcome to the Internet Relay Network " + Users.at(fd).getFullHostname());
     return;
 }
 

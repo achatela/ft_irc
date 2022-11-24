@@ -38,6 +38,7 @@ class Server{
 
         void sondage(); //nom a change
         void addPfd();
+        void checkInfo(User & user);
 };
 
 #endif

@@ -102,6 +102,17 @@ void Server::sondage(){
     memset(server_reply, 0, 512);
 }
 
+void Server::checkInfo(User & user)
+{
+    if ((!user.getHostname().empty() && !user.getNickname().empty()
+        && !user.getRealName().empty() && !user.getUsername().empty())
+        && user.getPassword() == user.getRealPassword())
+    {
+        user.setAccess(AUTHORIZED);
+        //send 001, 002, 003, 004 et motd
+    }
+}
+
 void Server::handleRequests(char *request, int fd){
     try{
         _Users.at(fd).concatBuffer(request);
@@ -114,6 +125,8 @@ void Server::handleRequests(char *request, int fd){
             try{
                 if (_command_functions.at(cmd) != NULL)
                     _command_functions.at(cmd)(_Users.at(fd).getBuffer(), fd, _Users, _channels);
+                if (_Users.at(fd).getAccess() == FORBIDDEN)
+                    checkInfo(_Users.at(fd));
             }
             catch (std::exception &e){
                 // std::cout << e.what() << std::endl;
