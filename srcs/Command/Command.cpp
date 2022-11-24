@@ -1,15 +1,19 @@
 #include "../../includes/Command.hpp"
 
-void Command::reply(std::string cmd, int fd, std::string msg){
-    std::cout << YELLOW << cmd << MAGENTA << ">>" << CYAN <<  "[" << fd << "] " << BLUE << msg << RESET;
+void Command::reply(int fd, std::string full_host_name, std::string reply_type, std::string nickname, std::string msg){
+    std::string toSend;
+    if (msg.empty())
+        toSend = ":" + full_host_name + reply_type + nickname + "\r\n";
+    else
+        toSend = ":" + full_host_name + reply_type + nickname +  " :" + msg + "\r\n";
+    send(fd, toSend.c_str(), toSend.length(), 0);
+    if (DEBUG)
+        std::cout << YELLOW <<  "Server" << MAGENTA << " >> " << CYAN <<  "[" << fd << "] " << BLUE << toSend << RESET;
 }
 
 void Command::ACCEPT(std::string, int fd, std::map<int, User > &, std::vector<Channel> &){
     std::string toSend("Unknown command: ACCEPT\r\n");
     send(fd, toSend.c_str(), toSend.length(), 0);
-
-    if (DEBUG)
-        reply("ACCEPT", fd, toSend);
 };
 
 
@@ -17,22 +21,10 @@ void Command::ACCEPT(std::string, int fd, std::map<int, User > &, std::vector<Ch
 
 
 void Command::ADMIN(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){
-    std::string toSendFirst(":" + Users.at(fd).getFullHostname() + " 256 " + Users.at(fd).getNickname() + " ClownRC " + ":Administrative info\r\n");
-    std::string toSendSecond(":" + Users.at(fd).getFullHostname() + " 257 " + Users.at(fd).getNickname() + " :You're on ClownRC, our server is hosted in France and is accesible with the following url FAUT QUON LA SET\r\n"); //URL a define
-    std::string toSendThird(":" + Users.at(fd).getFullHostname() + " 258 " + Users.at(fd).getNickname() + " :If you need any information relating our project fell free to contact us\r\n");
-    std::string toSendForth(":" + Users.at(fd).getFullHostname() + " 259 " + Users.at(fd).getNickname() + " :<achatela@student.42.fr>, <hcarpent@student.42.fr>\r\n");
-
-    send(fd, toSendFirst.c_str(), toSendFirst.length(), 0);
-    send(fd, toSendSecond.c_str(), toSendSecond.length(), 0);
-    send(fd, toSendThird.c_str(), toSendThird.length(), 0);
-    send(fd, toSendForth.c_str(), toSendForth.length(), 0);
-
-    if (DEBUG){
-        reply("ADMIN", fd, toSendFirst);
-        reply("ADMIN", fd, toSendSecond);
-        reply("ADMIN", fd, toSendThird);
-        reply("ADMIN", fd, toSendForth);
-    }
+    reply(fd, Users.at(fd).getFullHostname(), "256", Users.at(fd).getNickname() + " ClownRC ", "Administrative info");
+    reply(fd, Users.at(fd).getFullHostname(), "257", Users.at(fd).getNickname(), "You're on ClownRC, our server is hosted in France and is accesible with the following url FAUT QUON LA SET");
+    reply(fd, Users.at(fd).getFullHostname(), "258", Users.at(fd).getNickname(), "If you need any information relating our project fell free to contact us");
+    reply(fd, Users.at(fd).getFullHostname(), "259", Users.at(fd).getNickname(), "<achatela@student.42.fr>, <hcarpent@student.42.fr>");
 };
 
 
@@ -43,14 +35,9 @@ void Command::AWAY(std::string buffer, int fd, std::map<int, User > & Users, std
     buffer.erase(0, buffer.find(' ') + 2);
     std::string away_msg(buffer.substr(0, buffer.find("\r\n")));
 
-    std::string toSend(":" + Users.at(fd).getFullHostname() + " 306 " + Users.at(fd).getNickname() + " :You have been marked as begin away\r\n");
-    send(fd, toSend.c_str(), toSend.length(), 0);
+    reply(fd, Users.at(fd).getFullHostname(), "306", Users.at(fd).getNickname(), "You have been marked as begin away");
     Users.at(fd).setIsAway(true);
     Users.at(fd).setAwayMsg(away_msg);
-    if (DEBUG){
-        reply("AWAY", fd, toSend);
-        reply("AWAY", fd, Users.at(fd).getAwayMsg());
-    }
 };
 
 
@@ -84,51 +71,15 @@ void Command::IGNORE(std::string buffer, int fd, std::map<int, User > & Users, s
 
 void Command::INFO(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){
     std::string debug_str;
-    std::string toSend(":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :------------------INFO------------------\r\n"); //URL a define
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    debug_str += toSend;
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Server name ClownRC / URL A DEFINE\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    debug_str += toSend;
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Version : 1.0\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    debug_str += toSend;
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Made by the two original clowns:\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    debug_str += toSend;
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :- achatela <achatela@student.42.fr>\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    debug_str += toSend;
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :- hcarpent <hcarpent@student.42.fr>\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    debug_str += toSend;
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + ":\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    debug_str += toSend;
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Thanks for using ClownRC !\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    debug_str += toSend;
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 374 " + Users.at(fd).getNickname() + " :End of /INFO list\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    debug_str += toSend;
-    if (DEBUG)
-        reply("INFO", fd, debug_str);
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), "------------------INFO------------------");
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), "Server name ClownRC / URL A DEFINE");
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), "Version : 1.0");
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), "Made by the two original clowns:");
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), "- achatela <achatela@student.42.fr>");
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), "- hcarpent <hcarpent@student.42.fr>");
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), " ");
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), "Thanks for using ClownRC !");
+    reply(fd, Users.at(fd).getFullHostname(), "371", Users.at(fd).getNickname(), "End of /INFO list");
 };
 
 
@@ -143,10 +94,8 @@ void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std
     std::vector<Channel>::iterator it = channels.begin();
     for (; it != channels.end(); it++){
         if (it->getChannelName() == chan_name){
-            std::string toSen(":" + Users.at(fd).getFullHostname() + " JOIN :" + chan_name + "\r\n");
-            std::vector <int> tmp_vec = it->getFdList();
-            for (size_t i = 0; i < tmp_vec.size(); i++){
-                send(tmp_vec[i], toSen.c_str(), toSen.length(), 0); // envoyer le putain 
+            for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
+                reply(*ite, Users.at(fd).getFullHostname(), "JOIN", NULL, chan_name); // envoyer le putain
             }
             break;
         }
@@ -158,24 +107,16 @@ void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std
     }
     it->pushFdList(fd); // protéger si l'user n'a pas les droits
     it->getUserList().push_back(Users.at(fd).getNickname());
-    std::string toSend(":" + Users.at(fd).getFullHostname() + " 353 " + Users.at(fd).getNickname() + " = " + chan_name + " :@");
+    std::string msg = "@";
     for (std::vector<std::string>::iterator ite = it->getUserList().begin() ; ite != it->getUserList().end(); ite++){
-        toSend += *ite;
+        msg += *ite;
         if (it->getUserList().end() - ite != 1){
-            toSend += " ";
+            msg += " ";
         }
     }
-    toSend += "\r\n";
-    std::string toSend2(":" + Users.at(fd).getFullHostname() + " 366 " + Users.at(fd).getNickname() + " " + chan_name + " :End of /NAMES list" + "\r\n");
-    std::string toSend3(":" + Users.at(fd).getFullHostname() + " JOIN :" + chan_name + "\r\n");
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    send(fd, toSend2.c_str(), toSend2.length(), 0);
-    send(fd, toSend3.c_str(), toSend3.length(), 0);
-    if (DEBUG){
-        reply("JOIN", fd, toSend);
-        reply("JOIN", fd, toSend2);
-        reply("JOIN", fd, toSend3);
-    }
+    reply(fd, Users.at(fd).getFullHostname(), "353", Users.at(fd).getNickname() + " = " + chan_name, msg);
+    reply(fd, Users.at(fd).getFullHostname(), "366", Users.at(fd).getNickname() + " " + chan_name, "End of /NAMES list");
+    reply(fd, Users.at(fd).getFullHostname(), "JOIN", NULL, chan_name);
     //confirmation que l'user à join
     //envoyé le topic (RPL_TOPIC)
     //Envoyer liste user a celui qui join (RPL_NAMREPLY)
@@ -234,94 +175,43 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
             for(; i <= space_num; i++){
                 if (username[i][0] == '+')
                     break;
-                tmp_send.clear();
                 if (!check.isInUserList(username[i])){
-                    tmp_send += ":" + Users.at(fd).getFullHostname() + " 441 " + Users.at(fd).getNickname() + " " + tmp + " :User not on the channel\r\n";
-                    send(fd, tmp_send.c_str(), tmp_send.length(), 0);
-                    if (DEBUG)
-                       reply("MODE", fd, tmp_send);
+                    reply(fd, Users.at(fd).getFullHostname(), "441", Users.at(fd).getNickname() + " " + tmp, "User not on the channel");
                 }
                 else{
-                    tmp_send += ":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n";
-                    std::cout << i << ":" << " " << tmp_send << std::endl;
-                    send(fd, tmp_send.c_str(), tmp_send.length(), 0);
-                    if (DEBUG)
-                       reply("MODE", fd, tmp_send);
+                    reply(fd, Users.at(fd).getFullHostname(), "324", Users.at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i], NULL);
                 }
             }
             if (i < flags.size() - 1){
                 ;
             }
         }
-        std::string toSend(":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +n\r\n"); // suspect il faut enlever le \n en plein milieu
-        std::cout << "to send = " << toSend << std::endl;
-        send(fd, toSend.c_str(), toSend.length(), 0);
+        reply(fd, Users.at(fd).getFullHostname(), "324", Users.at(fd).getNickname() + " " + tmp + " +n", NULL);
+
     }
 };
 
 
 void Command::MOTD(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){ // changer (ouvrir un fichier conf/ircd.motd)
-    std::string toSendFirst(":" + Users.at(fd).getFullHostname() + " 375 " + Users.at(fd).getNickname() + " :- ClownRC Message of the day\r\n");
-    send(fd, toSendFirst.c_str(), toSendFirst.length(), 0);
-
-
-    std::string toSend(":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :-           achatela                                hcarpent" "\r\n");
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄          ⠄⢹⡘⣤⣶⣿⣿⣿⣿⣿⣿⣿⣿⣾⣶⣶⣶⣴⣤⣤⣦⣶⣶⣾⣼⣀⠋⡟⣼\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇          ⣇⠘⡄⣿⣿⣿⣿⣿⣿⣿⣻⠉⡋⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⣿⣿⣿⢰⠄⡟\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹          ⢹⠄⣧⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⣽⢵⣿⣿⣿⣿⣿⣿⣿⣿⣿⢸⠄⠁\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄          ⠄⣇⣿⣿⣿⣿⣿⣿⣿⠿⠻⠉⣿⣿⣿⣿⣿⠋⡿⣿⣿⣿⣿⣿⣿⣿⣾⢀⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄          ⠄⣿⢻⠉⡈⣀⣀⣀⣄⣤⣤⢀⡏⣿⣿⣿⣿⠈⠄⠄⠉⠋⠟⠿⡿⣿⣿⢰⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⡄⢸⣯⣥⡴⠒⢊⡁ ⭕ ⢸⣿⣿⣿⣿⣦⠈⠁ ⭕ ⣆⠈⣁⣈⣿⣿⡴        ⡴⣿⣿⣈⣁⠈⣆ 🌀 ⠁⠈⣦⣿⣿⣿⣿⢸ 🌀 ⡁⢊⠒⡴⣥⣯⢸⡄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿          ⣿⣿⣿⣿⣶⣵⣭⣬⣾⣤⣆⢿⣿⣿⣿⣿⣿⣼⣡⣶⣿⣶⣶⣿⣿⣿⣿⢸⣿\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄          ⠄⣼⠄⣀⣀⢖⡿⣿⣿⣿⠻⠙⠉⠎⠯⠿⡿⢿⡿⠿⠏⣿⣿⣿⣾⣩⡟⢻⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄          ⠄⠏⣿⣴⠁⠋⠟⠿⣿⢸⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⡀⣿⣿⣿⢿⣿⣷⠘⢀\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄          ⠄⠄⠃⣿⣼⠄⠄⠂⠄⡍⡋⠞⡤⣠⣀⣤⣤⣤⣶⣷⢿⠻⠙⣌⣷⣿⠘⠄⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄          ⠄⠄⠄⠇⣿⣰⠄⠄⠄⡌⠁⡇⡆⠐⣁⡍⣹⣾⡁⣿⠘⠄⣦⣿⢸⠄⠄⠄⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄          ⠄⠄⣰⠃⣿⣿⣼⠄⠄⠁⠄⠈⠘⡇⠘⢈⢣⠸⢹⡹⣷⣿⣿⠈⠄⠄⠄⠄⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄          ⠄⣷⣿⣰⠏⣿⡟⢀⠄⠄⠃⠓⣾⡏⣿⢿⠸⠄⡀⣷⣿⣿⠘⣷⠄⠄⠄⠄⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷          ⣷⣿⣿⣿⢀⡿⣼⡞⣠⠄⠄⠄⠄⠄⠄⠈⠄⡀⣷⣿⣿⠙⣷⣿⣿⣿⣠⠄⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿            ⣿⣿⣼⢀⠋⠿⣾⣶⣤⣤⣥⣭⣤⣦⣿⣿⣝⠿⠈⣷⣿⣿⣿⣿⣿⣼⠄\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-    toSend.clear();
-    toSend += ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- " "\r\n";
-    send(fd, toSend.c_str(), toSend.length(), 0);
-
-    std::string toSendLast(":" + Users.at(fd).getFullHostname() + " 376 " + Users.at(fd).getNickname() + " :End of /MOTD command\r\n");
-    send(fd, toSendLast.c_str(), toSendLast.length(), 0);
-    if (DEBUG){
-        reply("MOTD", fd, toSendFirst);
-        reply("MOTD", fd, toSendLast);
-    }
+    reply(fd, Users.at(fd).getFullHostname(), "375", Users.at(fd).getNickname(), "- ClownRC Message of the day");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "-             achatela                                      hcarpent");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄           ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇           ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹           ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄           ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄           ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⡄⢸⣯⣥⡴⠒⢊⡁ 👽 ⢸⣿⣿⣿⣿⣦⠈⠁ 👽 ⣆⠈⣁⣈⣿⣿⡴         ⡄⢸⣯⣥⡴⠒⢊⡁ ⭕ ⢸⣿⣿⣿⣿⣦⠈⠁ ⭕ ⣆⠈⣁⣈⣿⣿⡴");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿           ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄           ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄           ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄           ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄           ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄           ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄           ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷           ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿             ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ");
+    reply(fd, Users.at(fd).getFullHostname(), "376", Users.at(fd).getNickname(), "End of /MOTD command");
 };
 
 
@@ -341,11 +231,8 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
             it++;
         }
         if (it == Users.end()){
-            std::string tmp_error(":" + Users.at(fd).getFullHostname() + " 401 " + Users.at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
-            send(fd, tmp_error.c_str(), tmp_error.length(), 0);
-            if (DEBUG){
-                reply("PRIVMSG", fd, tmp_error);
-            }
+        reply(fd, Users.at(fd).getFullHostname(), "401", Users.at(fd).getNickname() + " " + tmp_user, "No such nick/channel");
+
         }
     }
 
@@ -570,7 +457,7 @@ void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std
                 reply("NICK", fd, toSend);
             return ;
         }
-    } 
+    }
     Users.at(fd).setNickname(buffer);
     std::string toSend2(": NICK :" + buffer + "\r\n");
     send(fd, toSend2.c_str(), toSend2.length(), 0);
@@ -630,7 +517,7 @@ void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std
         //         std::cout << "User disconncted" << std::endl;
         // }
 
-        std::string toSend(":" + Users.at(fd).getFullHostname() + " 001 " + Users.at(fd).getNickname() +  " :Welcome to the Internet Relay Network " + Users.at(fd).getNickname() + " ! " + Users.at(fd).getUsername() + "@" + "\r\n" + Users.at(fd).getHostname() + "\r\n");
+        std::string toSend(":" + Users.at(fd).getFullHostname() + " 001 " + Users.at(fd).getNickname() +  " :Welcome to the Internet Relay Network " + Users.at(fd).getFullHostname() + "\r\n");
         send(fd, toSend.c_str(), toSend.length(), 0);
         // std::cout << toSend << std::endl;
     }
