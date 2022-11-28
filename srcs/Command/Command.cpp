@@ -371,9 +371,10 @@ void Command::STATUSBAR(std::string buffer, int fd, std::map<int, User > & Users
 
 
 void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vector<Channel> & ){
-    // std::time_t time;
-
-    reply(fd, Users.at(fd).getFullHostname(), "391", Users.at(fd).getNickname() + " ClownRC", "16 mai 2000");
+    std::time_t time = std::time(NULL);
+    std::cout << "in reply" << std::endl;
+    std::string toSend = std::asctime(std::localtime(&time));
+    reply(fd, Users.at(fd).getFullHostname(), "391", Users.at(fd).getNickname(), "ClownRC :" + toSend);
 };
 
 
