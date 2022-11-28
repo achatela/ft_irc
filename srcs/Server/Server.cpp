@@ -117,15 +117,15 @@ void Server::checkInfo(User & user, int fd)
         send(fd, toSend3.c_str(), toSend3.length(), 0);
         std::string toSend4(":" + user.getFullHostname() + " 004 " + user.getNickname() + " :ClownRC 1.0 aiwro Oovimnptkl\r\n");
         send(fd, toSend4.c_str(), toSend4.length(), 0);
-        std::string toSend5(":" + user.getFullHostname() + " 251 " + user.getNickname() + " :A fix\r\n");
+        std::string toSend5(":" + user.getFullHostname() + " 251 " + user.getNickname() + " :There are X users and X invisible on X servers\r\n");
         send(fd, toSend5.c_str(), toSend5.length(), 0);
-        std::string toSend6(":" + user.getFullHostname() + " 252 " + user.getNickname() + " :A fix\r\n");
+        std::string toSend6(":" + user.getFullHostname() + " 252 " + user.getNickname() + " X :operator(s) online\r\n");
         send(fd, toSend6.c_str(), toSend6.length(), 0);
-        std::string toSend7(":" + user.getFullHostname() + " 253 " + user.getNickname() + " :A fix\r\n");
+        std::string toSend7(":" + user.getFullHostname() + " 253 " + user.getNickname() + " X :unknown connection(s)\r\n");
         send(fd, toSend7.c_str(), toSend7.length(), 0);
         std::string toSend8(":" + user.getFullHostname() + " 254 " + user.getNickname() + " " + std::to_string(_channels.size()) + " :channels formed\r\n");
         send(fd, toSend8.c_str(), toSend8.length(), 0);
-        std::string toSend9(":" + user.getFullHostname() + " 255 " + user.getNickname() + " :A fix\r\n");
+        std::string toSend9(":" + user.getFullHostname() + " 255 " + user.getNickname() + " :I have X clients and X servers\r\n");
         send(fd, toSend9.c_str(), toSend9.length(), 0);
         if (DEBUG){
             std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend1 << RESET;
