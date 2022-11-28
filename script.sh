@@ -1,1 +1,1 @@
-irssi -c $(hostname) -w b
+irssi -c $(hostname) -w e

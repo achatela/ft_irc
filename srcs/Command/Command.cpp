@@ -44,9 +44,9 @@ void Command::BAN(std::string buffer, int fd, std::map<int, User > & Users, std:
 // void Command::CLEAR(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::COMPLETION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::CONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::CTCP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+// void Command::CTCP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::CYCLE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::DCC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+// void Command::DCC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::DEOP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::DEVOICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::DEHILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -221,7 +221,6 @@ void Command::MOTD(std::string, int fd, std::map<int, User > & Users, std::vecto
 };
 
 
-
 void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
@@ -331,7 +330,14 @@ void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std
 };
 
 
-void Command::PING(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels;return ;};
+void Command::PING(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & ){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string toSend(":" + Users.at(fd).getFullHostname() + " PONG :" + buffer);
+    send(fd, toSend.c_str(), toSend.length(), 0);
+    if (DEBUG)
+        std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
+};
+
 // void Command::QUERY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
@@ -341,7 +347,6 @@ void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std
 
     Users.at(fd).setIsConnected(false);
     reply(fd, ":" + Users.at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
-    
 };
 
 
@@ -371,14 +376,40 @@ void Command::STATS(std::string buffer, int fd, std::map<int, User > & Users, st
 // void Command::STATUSBAR(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vector<Channel> & ){
+void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vector<Channel> &){
     std::time_t time = std::time(NULL);
     reply(fd, ":" + Users.at(fd).getFullHostname() + " 391 " + Users.at(fd).getNickname() + " ClownRC :" + std::asctime(std::localtime(&time)) + "\r\n");
 };
 
 
 // void Command::TOGGLE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+
+
+void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string chan_name(buffer.substr(0, buffer.find(" ")));
+    buffer.erase(0, buffer.find(' ') + 1);
+
+    std::string toFind = chan_name;
+    if (chan_name[0] != '#'){
+        std::string toFind = "#" + chan_name;
+    }  
+    std::vector<Channel>::iterator it = channels.begin();
+
+    while (it != channels.end()){
+        if (it->getChannelName() == toFind)
+            break;
+        it++;
+    }
+    if (it == channels.end()){
+        reply(fd, ":" + Users.at(fd).getFullHostname() + " 442 " + Users.at(fd).getNickname() + " " + chan_name + " :You're not on that channel\r\n");
+        return;
+    }
+
+    reply(fd, ":" + Users.at(fd).getFullHostname() + " TOPIC " + chan_name + " " + buffer);
+};
+
+
 void Command::TRACE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::TS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::UNALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -519,6 +550,7 @@ Command::Command(void){
     _commandsFilled["NOTICE"] = NOTICE;
     _commandsFilled["time"] = TIME;
     _commandsFilled["die"] = DIE;
+    _commandsFilled["TOPIC"] = TOPIC;
 };
 
 Command::~Command(void){
