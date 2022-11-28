@@ -1,6 +1,5 @@
 #include "../../includes/Server.hpp"
 #include "../../includes/User.hpp"
-#include <unistd.h>
 
 Server::Server(void){};
 
@@ -123,7 +122,9 @@ void Server::checkInfo(User & user, int fd)
         send(fd, toSend6.c_str(), toSend6.length(), 0);
         std::string toSend7(":" + user.getFullHostname() + " 253 " + user.getNickname() + " X :unknown connection(s)\r\n");
         send(fd, toSend7.c_str(), toSend7.length(), 0);
-        std::string toSend8(":" + user.getFullHostname() + " 254 " + user.getNickname() + " " + std::to_string(_channels.size()) + " :channels formed\r\n");
+        std::stringstream stream;
+        stream << _channels.size();
+        std::string toSend8(":" + user.getFullHostname() + " 254 " + user.getNickname() + " " + stream.str() + " :channels formed\r\n");
         send(fd, toSend8.c_str(), toSend8.length(), 0);
         std::string toSend9(":" + user.getFullHostname() + " 255 " + user.getNickname() + " :I have X clients and X servers\r\n");
         send(fd, toSend9.c_str(), toSend9.length(), 0);
