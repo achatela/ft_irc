@@ -117,8 +117,28 @@ void Server::checkInfo(User & user, int fd)
         send(fd, toSend3.c_str(), toSend3.length(), 0);
         std::string toSend4(":" + user.getFullHostname() + " 004 " + user.getNickname() + " :ClownRC 1.0 aiwro Oovimnptkl\r\n");
         send(fd, toSend4.c_str(), toSend4.length(), 0);
-        //std::string toSend5(":" + user.getFullHostname() + " 251 " + user.getNickname() + " :There are 1 users and 0 invisible on 1 servers\r\n");
-        //send(fd, toSend5.c_str(), toSend5.length(), 0);
+        std::string toSend5(":" + user.getFullHostname() + " 251 " + user.getNickname() + " :A fix\r\n");
+        send(fd, toSend5.c_str(), toSend5.length(), 0);
+        std::string toSend6(":" + user.getFullHostname() + " 252 " + user.getNickname() + " :A fix\r\n");
+        send(fd, toSend6.c_str(), toSend6.length(), 0);
+        std::string toSend7(":" + user.getFullHostname() + " 253 " + user.getNickname() + " :A fix\r\n");
+        send(fd, toSend7.c_str(), toSend7.length(), 0);
+        std::string toSend8(":" + user.getFullHostname() + " 254 " + user.getNickname() + " " + std::to_string(_channels.size()) + " :channels formed\r\n");
+        send(fd, toSend8.c_str(), toSend8.length(), 0);
+        std::string toSend9(":" + user.getFullHostname() + " 255 " + user.getNickname() + " :A fix\r\n");
+        send(fd, toSend9.c_str(), toSend9.length(), 0);
+        if (DEBUG){
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend1 << RESET;
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend2 << RESET;
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend3 << RESET;
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend4 << RESET;
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend5 << RESET;
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend6 << RESET;
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend7 << RESET;
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend8 << RESET;
+            std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend9 << RESET;
+        }
+        _command_functions.at("motd")(_Users.at(fd).getBuffer(), fd, _Users, _channels);
         //send 001, 002, 003, 004 ... 255 et motd
     }
 }
