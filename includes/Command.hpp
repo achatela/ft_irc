@@ -50,6 +50,7 @@ class Command{
         static void  DEOP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  DEVOICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  DEHILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
+        static void  DIE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  DISCONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         // static void  ECHO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);
         static void  EVAL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels);

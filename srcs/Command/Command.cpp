@@ -62,6 +62,14 @@ void Command::DCC(std::string buffer, int fd, std::map<int, User > & Users, std:
 void Command::DEOP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::DEVOICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::DEHILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+
+
+void Command::DIE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+    // check if the user is an operator
+    exit(1);
+};
+
+
 void Command::DISCONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::ECHO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::EVAL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -519,6 +527,7 @@ Command::Command(void){
     _commandsFilled["ACCEPT"] = ACCEPT;
     _commandsFilled["NOTICE"] = NOTICE;
     _commandsFilled["time"] = TIME;
+    _commandsFilled["die"] = DIE;
 };
 
 Command::~Command(void){
