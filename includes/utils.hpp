@@ -14,6 +14,7 @@
 # include <cstring>
 # include <string>
 # include <netdb.h>
+# include <ctime>
 
 # define ON 0
 # define OFF 1

@@ -102,14 +102,21 @@ void Server::sondage(){
     memset(server_reply, 0, 512);
 }
 
-void Server::checkInfo(User & user)
+void Server::checkInfo(User & user, int fd)
 {
+    std::string toSend;
     if ((!user.getHostname().empty() && !user.getNickname().empty()
         && !user.getRealName().empty() && !user.getUsername().empty())
         && user.getPassword() == user.getRealPassword())
     {
         user.setAccess(AUTHORIZED);
-        //send 001, 002, 003, 004 et motd
+        toSend = ":" + user.getFullHostname() + " 001 " + user.getNickname() + " :Welcome to the Internet Relay Network " + user.getFullHostname() + "\r\n";
+        send(fd, toSend.c_str(), toSend.length(), 0);
+        toSend = ":" + user.getFullHostname() + " 002 " + user.getNickname() + " :Your host is " + user.getHost() + "\r\n";
+        send(fd, toSend.c_str(), toSend.length(), 0);
+        toSend = ":" + user.getFullHostname() + " 003 " + user.getNickname() + " :This server was created Mon Nov 28 15:52:27 2022" + "\r\n";
+        send(fd, toSend.c_str(), toSend.length(), 0);
+        //send 001, 002, 003, 004 ... 255 et motd
     }
 }
 
@@ -126,7 +133,7 @@ void Server::handleRequests(char *request, int fd){
                 if (_command_functions.at(cmd) != NULL)
                     _command_functions.at(cmd)(_Users.at(fd).getBuffer(), fd, _Users, _channels);
                 if (_Users.at(fd).getAccess() == FORBIDDEN)
-                    checkInfo(_Users.at(fd));
+                    checkInfo(_Users.at(fd), fd);
             }
             catch (std::exception &e){
                 // std::cout << e.what() << std::endl;
