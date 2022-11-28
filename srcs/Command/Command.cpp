@@ -56,9 +56,9 @@ void Command::BAN(std::string buffer, int fd, std::map<int, User > & Users, std:
 // void Command::CLEAR(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::COMPLETION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::CONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::CTCP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+// void Command::CTCP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::CYCLE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::DCC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+// void Command::DCC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::DEOP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::DEVOICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::DEHILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -233,7 +233,6 @@ void Command::MOTD(std::string, int fd, std::map<int, User > & Users, std::vecto
 };
 
 
-
 void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
@@ -276,7 +275,7 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
                 if (Users.at(it->first).getIsAway() == true){
                     reply(fd, Users.at(fd).getFullHostname(), "301", Users.at(fd).getNickname(), Users.at(it->first).getAwayMsg());
                 }
-                reply(fd, Users.at(fd).getFullHostname(), "PRIVMSG", tmp_user, tmp_msg);
+                reply(it->first, Users.at(fd).getFullHostname(), "PRIVMSG", tmp_user, tmp_msg);
                 break ;
             }
         }
@@ -343,7 +342,14 @@ void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std
 };
 
 
-void Command::PING(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels;return ;};
+void Command::PING(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & ){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string toSend("PONG :" + buffer);
+    send(fd, toSend.c_str(), toSend.length(), 0);
+    if (DEBUG)
+        std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
+};
+
 // void Command::QUERY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
@@ -352,7 +358,7 @@ void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std
     std::string leave_msg(buffer.substr(0, buffer.find("\r\n")));
 
     Users.at(fd).setIsConnected(false);
-    reply(fd, Users.at(fd).getFullHostname(), "QUIT", "", "QUIT" + leave_msg);
+    reply(fd, Users.at(fd).getFullHostname(), "QUIT", "", "QUIT " + leave_msg);
     
 };
 
@@ -383,7 +389,7 @@ void Command::STATS(std::string buffer, int fd, std::map<int, User > & Users, st
 // void Command::STATUSBAR(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vector<Channel> & ){
+void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vector<Channel> &){
     std::time_t time = std::time(NULL);
     std::cout << "in reply" << std::endl;
     std::string toSend = std::asctime(std::localtime(&time));
