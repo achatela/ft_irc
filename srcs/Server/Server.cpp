@@ -104,18 +104,21 @@ void Server::sondage(){
 
 void Server::checkInfo(User & user, int fd)
 {
-    std::string toSend;
     if ((!user.getHostname().empty() && !user.getNickname().empty()
         && !user.getRealName().empty() && !user.getUsername().empty())
         && user.getPassword() == user.getRealPassword())
     {
         user.setAccess(AUTHORIZED);
-        toSend = ":" + user.getFullHostname() + " 001 " + user.getNickname() + " :Welcome to the Internet Relay Network " + user.getFullHostname() + "\r\n";
-        send(fd, toSend.c_str(), toSend.length(), 0);
-        toSend = ":" + user.getFullHostname() + " 002 " + user.getNickname() + " :Your host is " + user.getHost() + "\r\n";
-        send(fd, toSend.c_str(), toSend.length(), 0);
-        toSend = ":" + user.getFullHostname() + " 003 " + user.getNickname() + " :This server was created Mon Nov 28 15:52:27 2022" + "\r\n";
-        send(fd, toSend.c_str(), toSend.length(), 0);
+        std::string toSend1(":" + user.getFullHostname() + " 001 " + user.getNickname() + " :Welcome to the Internet Relay Network " + user.getFullHostname() + "\r\n");
+        send(fd, toSend1.c_str(), toSend1.length(), 0);
+        std::string toSend2(":" + user.getFullHostname() + " 002 " + user.getNickname() + " :Your host is " + user.getHost() + "\r\n");
+        send(fd, toSend2.c_str(), toSend2.length(), 0);
+        std::string toSend3(":" + user.getFullHostname() + " 003 " + user.getNickname() + " :This server was created " + std::asctime(std::localtime(&_server_time)) + "\r\n");
+        send(fd, toSend3.c_str(), toSend3.length(), 0);
+        std::string toSend4(":" + user.getFullHostname() + " 004 " + user.getNickname() + " :ClownRC 1.0 aiwro Oovimnptkl\r\n");
+        send(fd, toSend4.c_str(), toSend4.length(), 0);
+        //std::string toSend5(":" + user.getFullHostname() + " 251 " + user.getNickname() + " :There are 1 users and 0 invisible on 1 servers\r\n");
+        //send(fd, toSend5.c_str(), toSend5.length(), 0);
         //send 001, 002, 003, 004 ... 255 et motd
     }
 }

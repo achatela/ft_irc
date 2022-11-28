@@ -373,7 +373,7 @@ void Command::STATUSBAR(std::string buffer, int fd, std::map<int, User > & Users
 void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vector<Channel> & ){
     // std::time_t time;
 
-    reply(fd, Users.at(fd).getFullHostname(), "391", Users.at(fd).getNickname(), "");
+    reply(fd, Users.at(fd).getFullHostname(), "391", Users.at(fd).getNickname() + " ClownRC", "16 mai 2000");
 };
 
 
@@ -517,7 +517,7 @@ Command::Command(void){
     _commandsFilled["AWAY"] = AWAY;
     _commandsFilled["ACCEPT"] = ACCEPT;
     _commandsFilled["NOTICE"] = NOTICE;
-    _commandsFilled["TIME"] = TIME;
+    _commandsFilled["time"] = TIME;
 };
 
 Command::~Command(void){
