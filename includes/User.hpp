@@ -11,6 +11,7 @@ class User{
     private:
         bool _access;
         std::string _real_password;
+        std::string _host;
         std::string _hostname;
         int _fd;
         std::string _nickname; // 9 maximum any octet except NUL, CR(\r), LF(\b), " " and "@"
@@ -45,6 +46,8 @@ class User{
             std::string ret(_username + "!" + _username + "@" + _hostname);
             return ret;
         }
+        std::string getHost(){return _host;};
+        void setHost(std::string host){_host = host; return;};
         std::string getHostname(){return _hostname;};
         void setHostname(std::string hostname){_hostname = hostname; return;};
         std::string getRealPassword(){return _real_password;};
