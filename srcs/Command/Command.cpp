@@ -368,7 +368,15 @@ void Command::SQUERY(std::string buffer, int fd, std::map<int, User > & Users, s
 void Command::SQUIT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::STATS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::STATUSBAR(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::TIME(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+
+
+void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vector<Channel> & ){
+    // std::time_t time;
+
+    reply(fd, Users.at(fd).getFullHostname(), "391", Users.at(fd).getNickname(), "");
+};
+
+
 void Command::TOGGLE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::TRACE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -509,6 +517,7 @@ Command::Command(void){
     _commandsFilled["AWAY"] = AWAY;
     _commandsFilled["ACCEPT"] = ACCEPT;
     _commandsFilled["NOTICE"] = NOTICE;
+    _commandsFilled["TIME"] = TIME;
 };
 
 Command::~Command(void){
