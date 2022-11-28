@@ -4,7 +4,7 @@
 
 Server::Server(void){};
 
-Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_address)){
+Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_address)), _server_time(std::time(NULL)){
     Command _tmp;
 
     (void)_addrlen;

@@ -23,6 +23,7 @@ class Server{
         std::map<int, User > _Users;
 
         std::vector <Channel> _channels;
+        std::time_t _server_time;
 
     public:
         Server();
