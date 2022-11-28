@@ -1,0 +1,43 @@
+<< CAP LS
+<< PASS e
+<< NICK eee
+<< USER achatela achatela e2r6p6.clusters.42paris.fr :Alexis CHATELAIN
+>> : 433 * eee :Nickname is already in use
+<< NICK eee_
+>> : 433 * eee_ :Nickname is already in use
+<< NICK eee__
+>> : 433 * eee__ :Nickname is already in use
+<< NICK eee___
+>> : NICK :eee___
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 001 eee___ :Welcome to the Internet Relay Network eee___!achatela@e2r6p6.clusters.42paris.fr
+<< MODE eee___ +i
+<< WHOIS eee
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 002 eee___ :Your host is e2r6p6.clusters.42paris.fr
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 003 eee___ :This server was created Mon Nov 28 19:04:36 2022
+>> 
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 004 eee___ :ClownRC 1.0 aiwro Oovimnptkl
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 251 eee___ :There are X users and X invisible on X servers
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 252 eee___ X :operator(s) online
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 253 eee___ X :unknown connection(s)
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 254 eee___ 0 :channels formed
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 255 eee___ :I have X clients and X servers
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 375 eee___ :- ClownRC Message of the day
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :-             achatela                                      hcarpent
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄           ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇           ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹           ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄           ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄           ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⡄⢸⣯⣥⡴⠒⢊⡁ 👽 ⢸⣿⣿⣿⣿⣦⠈⠁ 👽 ⣆⠈⣁⣈⣿⣿⡴         ⡄⢸⣯⣥⡴⠒⢊⡁ ⭕ ⢸⣿⣿⣿⣿⣦⠈⠁ ⭕ ⣆⠈⣁⣈⣿⣿⡴
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿           ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄           ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄           ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄           ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄           ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄           ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄           ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷           ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿             ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 372 eee___ :- 
+>> :eee___!achatela@e2r6p6.clusters.42paris.fr 376 eee___ :End of /MOTD command
+<< PING eee___
