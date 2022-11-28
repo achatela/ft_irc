@@ -66,15 +66,6 @@ User::User(): _access(FORBIDDEN){};
 User::User(std::string password, struct sockaddr_in address) : _access(FORBIDDEN), _real_password(password), _isAway(false), _isConnected(true){
     _hostaddr = inet_ntoa(address.sin_addr);
     char hostname[NI_MAXHOST];
-<<<<<<< HEAD
-
-=======
-    char host[NI_MAXHOST];
-    if (getnameinfo((struct sockaddr *)&address, sizeof(address), host, NI_MAXHOST, NULL, 0, 0) != 0)
-        ;
-    else
-        setHost(host);
->>>>>>> eaf2fb4484a370fb2f418f938704e0e65c398982
     if (getnameinfo((struct sockaddr *)&address, sizeof(address), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV) != 0)
         ;
 	else{
