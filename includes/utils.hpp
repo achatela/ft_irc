@@ -15,7 +15,8 @@
 # include <string>
 # include <netdb.h>
 # include <ctime>
-# include <stdlib.h>
+#include <unistd.h>
+# include <sstream>
 
 # define ON 0
 # define OFF 1

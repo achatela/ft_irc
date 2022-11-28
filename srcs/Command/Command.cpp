@@ -64,7 +64,7 @@ void Command::DEVOICE(std::string buffer, int fd, std::map<int, User > & Users, 
 void Command::DEHILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::DIE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::DIE(std::string, int, std::map<int, User > &, std::vector<Channel> &){
     // check if the user is an operator
     exit(1);
 };
@@ -207,7 +207,7 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
 
 void Command::MOTD(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){ // changer (ouvrir un fichier conf/ircd.motd)
     reply(fd, Users.at(fd).getFullHostname(), "375", Users.at(fd).getNickname(), "- ClownRC Message of the day");
-    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "-             achatela                                      hcarpent");
+    reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "-           achatela                                hcarpent");
     reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄           ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄");
     reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇           ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇");
     reply(fd, Users.at(fd).getFullHostname(), "372", Users.at(fd).getNickname(), "- ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹           ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹");
