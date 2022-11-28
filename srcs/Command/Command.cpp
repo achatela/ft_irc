@@ -263,7 +263,7 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
                 if (Users.at(it->first).getIsAway() == true){
                     reply(fd, ":" + Users.at(fd).getFullHostname() + " 301 " + Users.at(fd).getNickname() + " :" + Users.at(it->first).getAwayMsg() + "\r\n");
                 }
-                reply(it->first, Users.at(fd).getFullHostname(), "PRIVMSG", tmp_user, tmp_msg);
+                reply(it->first, ":" + Users.at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
                 break ;
             }
         }
@@ -332,7 +332,7 @@ void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std
 
 void Command::PING(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & ){
     buffer.erase(0, buffer.find(' ') + 1);
-    std::string toSend("PONG :" + buffer);
+    std::string toSend(":" + Users.at(fd).getFullHostname() + " PONG :" + buffer);
     send(fd, toSend.c_str(), toSend.length(), 0);
     if (DEBUG)
         std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
@@ -346,8 +346,7 @@ void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std
     std::string leave_msg(buffer.substr(0, buffer.find("\r\n")));
 
     Users.at(fd).setIsConnected(false);
-    reply(fd, Users.at(fd).getFullHostname(), "QUIT", "", "QUIT " + leave_msg);
-    
+    reply(fd, ":" + Users.at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
 };
 
 
@@ -384,7 +383,33 @@ void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vect
 
 
 // void Command::TOGGLE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+
+
+void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string chan_name(buffer.substr(0, buffer.find(" ")));
+    buffer.erase(0, buffer.find(' ') + 1);
+
+    std::string toFind = chan_name;
+    if (chan_name[0] != '#'){
+        std::string toFind = "#" + chan_name;
+    }  
+    std::vector<Channel>::iterator it = channels.begin();
+
+    while (it != channels.end()){
+        if (it->getChannelName() == toFind)
+            break;
+        it++;
+    }
+    if (it == channels.end()){
+        reply(fd, ":" + Users.at(fd).getFullHostname() + " 442 " + Users.at(fd).getNickname() + " " + chan_name + " :You're not on that channel\r\n");
+        return;
+    }
+
+    reply(fd, ":" + Users.at(fd).getFullHostname() + " TOPIC " + chan_name + " " + buffer);
+};
+
+
 void Command::TRACE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::TS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::UNALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -525,6 +550,7 @@ Command::Command(void){
     _commandsFilled["NOTICE"] = NOTICE;
     _commandsFilled["time"] = TIME;
     _commandsFilled["die"] = DIE;
+    _commandsFilled["TOPIC"] = TOPIC;
 };
 
 Command::~Command(void){
