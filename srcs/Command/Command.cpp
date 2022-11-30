@@ -150,17 +150,20 @@ void Command::LIST(std::string buffer, int fd, std::map<int, User > & Users, std
     buffer.erase(0, buffer.find(' ') + 1);
     std::string chan_name(buffer.substr(0, buffer.find(" ")));
     std::string cmp_name(chan_name.substr(0, chan_name.find("\r\n")));
+    std::stringstream stream;
 
     if (chan_name[0] == '\r' && chan_name[1] == '\n' || buffer.size() != chan_name.size()){
         for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++){
-            reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + "tmp (nb user)" + " " + it->getTopic() + "\r\n");
+            stream << it->getFdList().size();
+            reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
         }
     }
     else{
         for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++){
             std::cout << "channel name = " << it->getChannelName() << " cmp_name = " << cmp_name << std::endl;
             if (it->getChannelName() == cmp_name){
-                reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + "tmp (nb user)" + " " + it->getTopic() + "\r\n");
+                stream << it->getFdList().size();
+                reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
                 break;
             }
         }
