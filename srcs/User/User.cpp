@@ -64,6 +64,7 @@
 User::User(): _access(FORBIDDEN){};
 
 User::User(std::string password, struct sockaddr_in address) : _access(FORBIDDEN), _real_password(password), _isAway(false), _isConnected(true){
+    _usermode = "w";
     _hostaddr = inet_ntoa(address.sin_addr);
     char host[NI_MAXHOST];
     char hostname[NI_MAXHOST];

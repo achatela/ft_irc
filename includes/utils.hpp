@@ -17,6 +17,7 @@
 # include <ctime>
 #include <unistd.h>
 # include <sstream>
+#include <bits/stdc++.h>
 
 # define ON 0
 # define OFF 1

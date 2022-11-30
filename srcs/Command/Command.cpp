@@ -1,5 +1,7 @@
 #include "../../includes/Command.hpp"
 
+std::map<int, User>::iterator findUserByNickname(int fd, std::string nickname, std::map<int, User > & Users);
+
 void Command::reply(int fd, std::string toSend){
     send(fd, toSend.c_str(), toSend.length(), 0);
     if (DEBUG)
@@ -131,8 +133,26 @@ void Command::KICK(std::string buffer, int fd, std::map<int, User > & Users, std
 void Command::KICKBAN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
 
-void Command::KILL(std::string , int, std::map<int, User > &, std::vector<Channel> &){
-
+void Command::KILL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string nickname =  buffer.substr(0, buffer.find(' '));
+    buffer.erase(0, buffer.find(' ') + 1);
+    if (buffer == ":\r\n"){
+        reply(fd, ":" + Users.at(fd).getFullHostname() + " 461 " + Users.at(fd).getNickname() + " KILL :Not enough parameters\r\n");
+        return;
+    }
+    if (Users.at(fd).getUserMode().find('o') == std::string::npos){
+        reply(fd, ":" + Users.at(fd).getFullHostname() + " 481 " + Users.at(fd).getNickname() + " :Permission Denied- You're not an IRC operator\r\n");
+        return;
+    }
+    for (std::map<int, User>::iterator it = Users.begin(); it != Users.end(); it++){
+        if (it->second.getNickname() == nickname){
+            reply(it->first, ":" + Users.at(fd).getFullHostname() + " KILL " + buffer);
+            reply(it->first, ":" + it->second.getFullHostname() + " QUIT " + buffer);
+            return;
+        }
+    }
+    reply(fd, ":" + Users.at(fd).getFullHostname() + " 401 " + Users.at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
 };
 
 
@@ -152,7 +172,7 @@ void Command::LIST(std::string buffer, int fd, std::map<int, User > & Users, std
     std::string cmp_name(chan_name.substr(0, chan_name.find("\r\n")));
     std::stringstream stream;
 
-    if (chan_name[0] == '\r' && chan_name[1] == '\n' || buffer.size() != chan_name.size()){
+    if ((chan_name[0] == '\r' && chan_name[1] == '\n') || buffer.size() != chan_name.size()){
         for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++){
             stream << it->getFdList().size();
             reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
@@ -231,6 +251,60 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
         }
         reply(fd, ":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +n\r\n");
     }
+    else{
+        if (tmp != Users.at(fd).getNickname() && Users.at(fd).getUserMode().find('o') == std::string::npos){
+            reply(fd, ":" + Users.at(fd).getFullHostname() + " 502 " + Users.at(fd).getNickname() + " :Can't change mode for other users\r\n");
+            return;
+        }
+        std::map<int, User>::iterator it = Users.begin();
+        for (; it != Users.end(); it++){
+            if (it->second.getNickname() == tmp)
+                break;
+        }
+        if (it == Users.end()){
+            reply(fd, ":" + Users.at(fd).getFullHostname() + " 401 " + Users.at(fd).getNickname() + " " + tmp + " :No such nick/channel\r\n");
+            return;
+        }
+        if (buffer.find(' ') != std::string::npos)
+            buffer = buffer.substr(0, buffer.find(' '));
+        if (buffer.find('\r') != std::string::npos)
+            buffer = buffer.substr(0, buffer.find('\r'));
+        if (buffer[0] != '+' && buffer[0] != '-')
+            buffer = '+' + buffer;
+        for (std::string::size_type i = 1; i < buffer.size(); i++)//effacer les doublon et trouver les modes inconnus
+        {
+            if (buffer[i] != 'w' && buffer[i] != 'i' && buffer[i] != 'o'){
+                reply(fd, ":" + Users.at(fd).getFullHostname() + " 501 " + Users.at(fd).getNickname() + " :Unknown MODE flag\r\n");
+                return;
+            }
+            std::string::size_type j = i + 1;
+            while (j < buffer.size())
+            {
+                if (buffer[i] == buffer[j])
+                    buffer.erase(j, 1);
+                else
+                    ++j;
+            }
+        }
+        if (buffer.find('o') != std::string::npos && Users.at(fd).getUserMode().find('o') == std::string::npos)
+            buffer.erase(buffer.find('o'), 1);
+        std::string mode = Users.at(fd).getUserMode();
+        if (buffer[0] == '+'){
+            for (std::string::size_type i = 1; i < buffer.size(); i++){//ajouter des modes
+                if (mode.find(buffer[i]) == std::string::npos)
+                    mode += buffer[i];
+            }
+        }
+        else{
+            for (std::string::size_type i = 1; i < buffer.size(); i++){//enlever des modes
+                if (mode.find(buffer[i]) != std::string::npos)
+                    mode.erase(mode.find(buffer[i]), 1);
+            }
+        }
+        Users.at(fd).setUserMode(mode);
+        reply(fd, ":" + Users.at(fd).getFullHostname() + " 221 " + Users.at(fd).getNickname() + " +" + Users.at(fd).getUserMode() + "\r\n");
+    }
+
 };
 
 
@@ -332,7 +406,19 @@ void Command::NOTICE(std::string buffer, int fd, std::map<int, User > & Users, s
 
 void Command::NOTIFY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;}; // notify list empty
 // void Command::OP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::OPER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::OPER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+    buffer.erase(0, buffer.find(' ') + 1);
+    buffer.erase(0, buffer.find(' ') + 1);
+    if (buffer == "KrazyAlexis68!!\r\n"){
+        reply(fd, ":" + Users.at(fd).getFullHostname() + " 381 " + Users.at(fd).getNickname() + " :You are now an IRC operator\r\n");
+        std::string mode = Users.at(fd).getUserMode();
+        if (Users.at(fd).getUserMode().find('o') == std::string::npos)
+            Users.at(fd).setUserMode(Users.at(fd).getUserMode() + 'o');
+        reply(fd, ":" + Users.at(fd).getFullHostname() + " 221 " + Users.at(fd).getNickname() + " +" + Users.at(fd).getUserMode() + "\r\n");
+    }
+    else
+        reply(fd, ":" + Users.at(fd).getFullHostname() + " 464 " + Users.at(fd).getNickname() + " :Password incorrect\r\n");
+};
 
 
 void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
@@ -617,6 +703,8 @@ Command::Command(void){
     _commandsFilled["LIST"] = LIST;
     _commandsFilled["trace"] = TRACE;
     _commandsFilled["WHOIS"] = WHOIS;
+    _commandsFilled["OPER"] = OPER;
+    _commandsFilled["kill"] = KILL;
 };
 
 Command::~Command(void){

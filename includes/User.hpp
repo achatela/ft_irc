@@ -64,6 +64,8 @@ class User{
         void setRealPassword(std::string realPassword){_real_password = realPassword;};
         void setIsAway(bool status){_isAway = status;};
         bool getIsAway(){return _isAway;};
+        void setUserMode(std::string mode){_usermode = mode;};
+        std::string getUserMode(){return _usermode;};
         void setAwayMsg(std::string msg){_awayMsg = msg;};
         std::string getAwayMsg(){return _awayMsg;};
 
