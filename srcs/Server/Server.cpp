@@ -78,13 +78,13 @@ void Server::sondage(){
             {
                 if (recv(it->fd, server_reply, 512, MSG_DONTWAIT) == 0)
                 {
-                    std::cout << "devrait supprimer" << std::endl;
                     int i = it - _pfds.begin();
                     std::map<int, User>::iterator it2 = _Users.begin();
                     while (i - 1 > 0){
                         it2++;
                         i--;
                     }
+                    close(it->fd);
                     it = _pfds.erase(it);
                     _Users.erase(it2);
                     break;
@@ -94,7 +94,20 @@ void Server::sondage(){
                     handleRequests(server_reply, _pfds[j].fd);
                 }
             }
-            //std::cout << _pfds.size() << std::endl;
+        }
+        for (std::map<int, User>::iterator it = _Users.begin(); it != _Users.end(); it++){
+            if (it->second.getIsConnected() == false){
+                _Users.erase(it);
+                int tmp = it->first;
+                for(std::vector<pollfd>::iterator it2 = _pfds.begin() + 1; it2 != _pfds.end(); it2++){
+                    if (it2->fd == tmp){
+                        close(it2->fd);
+                        _pfds.erase(it2);
+                        memset(server_reply, 0, 512);
+                        return ;
+                    }
+                }
+            }
         }
     }
     //std::cout << "\terver_reply before reset = " << server_reply << std::endl;
