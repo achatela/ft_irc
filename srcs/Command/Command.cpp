@@ -136,12 +136,45 @@ void Command::KILL(std::string , int, std::map<int, User > &, std::vector<Channe
 };
 
 
-void Command::KNOCK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::KNOCKOUT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::LASTLOG(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+// void Command::KNOCK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+// void Command::KNOCKOUT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+// void Command::LASTLOG(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::LAYOUT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::LINKS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::LIST(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+
+
+void Command::LIST(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+    //Format is fullhostname 322 username #chan_name (nb users) :(topic)
+    //then fullhostname 323 username :End of /LIST
+
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string chan_name(buffer.substr(0, buffer.find(" ")));
+    std::string cmp_name(chan_name.substr(0, chan_name.find("\r\n")));
+
+    if (chan_name[0] == '\r' && chan_name[1] == '\n' || buffer.size() != chan_name.size()){
+        for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++){
+            reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + "tmp (nb user)" + " " + it->getTopic() + "\r\n");
+        }
+    }
+    else{
+        for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++){
+            std::cout << "channel name = " << it->getChannelName() << " cmp_name = " << cmp_name << std::endl;
+            if (it->getChannelName() == cmp_name){
+                reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + "tmp (nb user)" + " " + it->getTopic() + "\r\n");
+                break;
+            }
+        }
+    }
+    reply(fd, ":" + Users.at(fd).getFullHostname() + " 323 " + Users.at(fd).getUsername() + " :End of /LIST\r\n");
+
+    //No args = list des channels
+
+    //if 1 arg only print the channel if he exists 
+
+    //else if more than 1 arg = print everything
+};
+
+
 // void Command::LOAD(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::LASTLOGLUSERS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::MAP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -358,7 +391,13 @@ void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std
 void Command::REHASH(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;}; // ??
 // void Command::RELOAD(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::RESIZE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::RESTART(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+
+
+void Command::RESTART(std::string , int , std::map<int, User > & , std::vector<Channel> & ){
+    ;
+};
+
+
 // void Command::RMRECONNS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::RMREJOINS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::SAVE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -386,6 +425,7 @@ void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vect
 
 
 void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+
     buffer.erase(0, buffer.find(' ') + 1);
     std::string chan_name(buffer.substr(0, buffer.find(" ")));
     buffer.erase(0, buffer.find(' ') + 1);
@@ -407,6 +447,8 @@ void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, st
     }
 
     reply(fd, ":" + Users.at(fd).getFullHostname() + " TOPIC " + chan_name + " " + buffer);
+    it->clearTopic();
+    it->setTopic(buffer);
 };
 
 
@@ -550,7 +592,9 @@ Command::Command(void){
     _commandsFilled["NOTICE"] = NOTICE;
     _commandsFilled["time"] = TIME;
     _commandsFilled["die"] = DIE;
+    _commandsFilled["restart"] = RESTART;
     _commandsFilled["TOPIC"] = TOPIC;
+    _commandsFilled["LIST"] = LIST;
 };
 
 Command::~Command(void){

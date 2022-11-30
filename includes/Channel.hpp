@@ -17,6 +17,7 @@ class Channel{
         std::vector <std::string> _user_list;
         std::map <int, User > _Users;
         std::map <int, std::string> _Users_modes;
+        std::string         _topic;
 
     public:
 
@@ -41,6 +42,10 @@ class Channel{
                 return true;
             return false;
         }
+
+        std::string getTopic(){return _topic;};
+        void setTopic(std::string buffer){_topic = buffer;}
+        void clearTopic(){_topic.clear();};
 };
 
 #endif
