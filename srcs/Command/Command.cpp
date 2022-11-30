@@ -455,7 +455,11 @@ void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, st
 };
 
 
-void Command::TRACE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::TRACE(std::string , int , std::map<int, User > & , std::vector<Channel> & ){
+    ;
+};
+
+
 // void Command::TS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::UNALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 void Command::UNBAN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
@@ -485,7 +489,20 @@ void Command::WHO(std::string buffer, int fd, std::map<int, User > & Users, std:
 };
 
 
-void Command::WHOIS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::WHOIS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string tmp(buffer.substr(0, buffer.find(" ")));
+    std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+    (void)fd;
+    for (std::map<int, User>::iterator it = Users.begin(); it != Users.end(); it++){
+        if (it->second.getUsername() == toFind){
+            reply(fd, ":" + Users.at(fd).getFullHostname() + " 311 " + Users.at(fd).getNickname() + " " + toFind + " " + it->second.getHostname() + " * :" + it->second.getRealName() + "\r\n");
+            return;
+        }
+    }
+};
+
+
 void Command::WHOWAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 // void Command::WINDOW(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
 
@@ -598,6 +615,8 @@ Command::Command(void){
     _commandsFilled["restart"] = RESTART;
     _commandsFilled["TOPIC"] = TOPIC;
     _commandsFilled["LIST"] = LIST;
+    _commandsFilled["trace"] = TRACE;
+    _commandsFilled["WHOIS"] = WHOIS;
 };
 
 Command::~Command(void){
