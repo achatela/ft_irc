@@ -1,6 +1,5 @@
 #include "../../includes/Command.hpp"
-
-std::map<int, User>::iterator findUserByNickname(int fd, std::string nickname, std::map<int, User > & Users);
+#include "../../includes/Server.hpp"
 
 void Command::reply(int fd, std::string toSend){
     send(fd, toSend.c_str(), toSend.length(), 0);
@@ -8,110 +7,75 @@ void Command::reply(int fd, std::string toSend){
         std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
 }
 
-void Command::ACCEPT(std::string, int fd, std::map<int, User > &, std::vector<Channel> &){
+void Command::ACCEPT(std::string, int fd, Server & server){
     reply(fd, "Unknown command: ACCEPT\r\n");
 };
 
-
-// void Command::ACTION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-
-
-void Command::ADMIN(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 256 " + Users.at(fd).getNickname() + " ClownRC :Administrative info\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 257 " + Users.at(fd).getNickname() + " :You're on ClownRC, our server is hosted in France and is accesible with the following url FAUT QUON LA SET\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 258 " + Users.at(fd).getNickname() + " :If you need any information relating our project fell free to contact us\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 259 " + Users.at(fd).getNickname() + " :<achatela@student.42.fr>, <hcarpent@student.42.fr>\r\n");
+void Command::ADMIN(std::string, int fd, Server & server){
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 256 " + server.getUsers().at(fd).getNickname() + " ClownRC :Administrative info\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 257 " + server.getUsers().at(fd).getNickname() + " :You're on ClownRC, our server is hosted in France and is accesible with the following url FAUT QUON LA SET\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 258 " + server.getUsers().at(fd).getNickname() + " :If you need any information relating our project fell free to contact us\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 259 " + server.getUsers().at(fd).getNickname() + " :<achatela@student.42.fr>, <hcarpent@student.42.fr>\r\n");
 };
 
-
-// void Command::ALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-
-
-void Command::AWAY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::AWAY(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 2);
     std::string away_msg(buffer.substr(0, buffer.find("\r\n")));
 
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 306 " + Users.at(fd).getNickname() + " :You have been marked as begin away\r\n");
-    Users.at(fd).setIsAway(true);
-    Users.at(fd).setAwayMsg(away_msg);
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 306 " + server.getUsers().at(fd).getNickname() + " :You have been marked as begin away\r\n");
+    server.getUsers().at(fd).setIsAway(true);
+    server.getUsers().at(fd).setAwayMsg(away_msg);
 };
 
 
-void Command::BAN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::BEEP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::BIND(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::CAT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::CD(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::CHANNEL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::CLEAR(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::COMPLETION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::CONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::CTCP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::CYCLE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::DCC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::DEOP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::DEVOICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::DEHILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::CYCLE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
 
-void Command::DIE(std::string, int, std::map<int, User > &, std::vector<Channel> &){
-    // check if the user is an operator
+void Command::DIE(std::string, int, Server & server){
     exit(1);
-    // Free
 };
 
 
-void Command::DISCONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::ECHO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::EVAL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::EXEC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::FLUSHBUFFER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::FOREACH(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::FORMAT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::HASH(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::HELP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::HILIGHT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::IGNORE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::DISCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
-
-void Command::INFO(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::INFO(std::string, int fd, Server & server){
     std::string debug_str;
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371" + Users.at(fd).getNickname() + " :------------------INFO------------------\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Server name ClownRC / URL A DEFINE\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Version : 1.0\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371" + Users.at(fd).getNickname() + " :Made by the two original clowns:\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :- achatela <achatela@student.42.fr>\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :- hcarpent <hcarpent@student.42.fr>\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :Thanks for using ClownRC !\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 371 " + Users.at(fd).getNickname() + " :End of /INFO list\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371" + server.getUsers().at(fd).getNickname() + " :------------------INFO------------------\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :Server name ClownRC / URL A DEFINE\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :Version : 1.0\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371" + server.getUsers().at(fd).getNickname() + " :Made by the two original clowns:\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :- achatela <achatela@student.42.fr>\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :- hcarpent <hcarpent@student.42.fr>\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :Thanks for using ClownRC !\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :End of /INFO list\r\n");
 };
 
 
-void Command::INVITE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::IRCNET(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::ISO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::INVITE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::ISO(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
 
-void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::JOIN(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string chan_name(buffer.substr(0, buffer.find("\r\n")));
-    std::vector<Channel>::iterator it = channels.begin();
-    for (; it != channels.end(); it++){
+    std::vector<Channel>::iterator it = server.getChannels().begin();
+    for (; it != server.getChannels().end(); it++){
         if (it->getChannelName() == chan_name){
             for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
-                reply(*ite, ":" + Users.at(fd).getFullHostname() + " JOIN :" + chan_name + "\r\n"); // envoyer le putain
+                reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " JOIN :" + chan_name + "\r\n"); // envoyer le putain
             }
             break;
         }
     }
-    if (it == channels.end()){
-        channels.push_back(Channel());
-        channels.back().setChannelName(chan_name);
-        it = channels.end() - 1;
+    if (it == server.getChannels().end()){
+        server.getChannels().push_back(Channel());
+        server.getChannels().back().setChannelName(chan_name);
+        it = server.getChannels().end() - 1;
     }
     it->pushFdList(fd); // protéger si l'user n'a pas les droits
-    it->getUserList().push_back(Users.at(fd).getNickname());
+    it->getUserList().push_back(server.getUsers().at(fd).getNickname());
     std::string msg = "@";
     for (std::vector<std::string>::iterator ite = it->getUserList().begin() ; ite != it->getUserList().end(); ite++){
         msg += *ite;
@@ -119,51 +83,96 @@ void Command::JOIN(std::string buffer, int fd, std::map<int, User > & Users, std
             msg += " ";
         }
     }
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 353 " + Users.at(fd).getNickname() + " = " + chan_name + " :" + msg + "\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 366 " + Users.at(fd).getNickname() + " " + chan_name + " :End of /NAMES list\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " JOIN " + chan_name + "\r\n");
-    //confirmation que l'user à join
-    //envoyé le topic (RPL_TOPIC)
-    //Envoyer liste user a celui qui join (RPL_NAMREPLY)
-    //it->addUsername
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 353 " + server.getUsers().at(fd).getNickname() + " = " + chan_name + " :" + msg + "\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 366 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :End of /NAMES list\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " JOIN " + chan_name + "\r\n");
 };
 
 
-void Command::KICK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::KICKBAN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::KICK(std::string buffer, int fd,  Server & server){
+    //
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string chan_name =  buffer.substr(0, buffer.find(' '));
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string nickname =  buffer.substr(0, buffer.find(' '));
+    std::vector<Channel>::iterator it = server.getChannels().begin();
+
+    for (; it != server.getChannels().end(); it++){
+        if (it->getChannelName() == chan_name)
+            break;
+    }
+    if (it == server.getChannels().end()){// a check
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
+        return;
+    }
+
+    //Check si l'user est operator/operator de channel
 
 
-void Command::KILL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+    std::vector<std::string>::iterator it2 = it->getUserList().begin();
+    for (; it2 != it->getUserList().end(); it2++){
+        if (*it2 == nickname)
+            break;
+    }
+    if (it2 == it->getUserList().end()){// a check
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
+        return;
+    }
+    std::vector<int>::iterator it3 = it->getFdList().begin();
+    for (; it3 != it->getFdList().end(); it3++){
+        reply(*it3, ":" + server.getUsers().at(fd).getFullHostname() + " KICK " + chan_name + " " + nickname + " :\r\n");
+    }
+    it2 = it->getUserList().begin();
+    it3 = it->getFdList().begin();
+    for (; it2 != it->getUserList().end(); it2++, it3++){
+        if (*it2 == nickname){
+            it->getUserList().erase(it2);
+            it->getFdList().erase(it3);
+            break;
+        }
+    }
+    if (it->getUserList().empty())
+        server.getChannels().erase(it);
+
+};
+
+
+void Command::KICKBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+
+
+void Command::KILL(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string nickname =  buffer.substr(0, buffer.find(' '));
     buffer.erase(0, buffer.find(' ') + 1);
     if (buffer == ":\r\n"){
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 461 " + Users.at(fd).getNickname() + " KILL :Not enough parameters\r\n");
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 461 " + server.getUsers().at(fd).getNickname() + " KILL :Not enough parameters\r\n");
         return;
     }
-    if (Users.at(fd).getUserMode().find('o') == std::string::npos){
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 481 " + Users.at(fd).getNickname() + " :Permission Denied- You're not an IRC operator\r\n");
+    if (server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 481 " + server.getUsers().at(fd).getNickname() + " :Permission Denied- You're not an IRC operator\r\n");
         return;
     }
-    for (std::map<int, User>::iterator it = Users.begin(); it != Users.end(); it++){
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
         if (it->second.getNickname() == nickname){
-            reply(it->first, ":" + Users.at(fd).getFullHostname() + " KILL " + buffer);
+            reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " KILL " + buffer);
             reply(it->first, ":" + it->second.getFullHostname() + " QUIT " + buffer);
-            return;
+            for (std::vector<pollfd>::iterator it2 = server.getPfds().begin(); it2 != server.getPfds().end(); it2++){
+                if (it2->fd == it->first){
+                    close(it2->fd);
+                    server.getPfds().erase(it2);
+                    server.getUsers().erase(it);
+                    return;
+                }
+            }
         }
     }
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 401 " + Users.at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
 };
 
-
-// void Command::KNOCK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::KNOCKOUT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::LASTLOG(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::LAYOUT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::LINKS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::LINKS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
 
-void Command::LIST(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::LIST(std::string buffer, int fd,  Server & server){
     //Format is fullhostname 322 username #chan_name (nb users) :(topic)
     //then fullhostname 323 username :End of /LIST
 
@@ -173,39 +182,27 @@ void Command::LIST(std::string buffer, int fd, std::map<int, User > & Users, std
     std::stringstream stream;
 
     if ((chan_name[0] == '\r' && chan_name[1] == '\n') || buffer.size() != chan_name.size()){
-        for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++){
+        for (std::vector<Channel>::iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++){
             stream << it->getFdList().size();
-            reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 322 " + server.getUsers().at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
         }
     }
     else{
-        for (std::vector<Channel>::iterator it = channels.begin(); it != channels.end(); it++){
+        for (std::vector<Channel>::iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++){
             std::cout << "channel name = " << it->getChannelName() << " cmp_name = " << cmp_name << std::endl;
             if (it->getChannelName() == cmp_name){
                 stream << it->getFdList().size();
-                reply(fd, ":" + Users.at(fd).getFullHostname() + " 322 " + Users.at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
+                reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 322 " + server.getUsers().at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
                 break;
             }
         }
     }
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 323 " + Users.at(fd).getUsername() + " :End of /LIST\r\n");
-
-    //No args = list des channels
-
-    //if 1 arg only print the channel if he exists 
-
-    //else if more than 1 arg = print everything
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 323 " + server.getUsers().at(fd).getUsername() + " :End of /LIST\r\n");
 };
 
+void Command::MAP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
-// void Command::LOAD(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::LASTLOGLUSERS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::MAP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::ME(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::MIRCDCC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-
-
-void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::MODE(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     if (buffer.find(' ') != std::string::npos)
@@ -214,12 +211,12 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
         std::string flags(buffer.substr(0, buffer.find(" ")));
         size_t space_num = 0;
         Channel check;
-        int j = getChannel(tmp, channels);
+        int j = getChannel(tmp, server.getChannels());
         if (j == -1){
             return ;
         }
         else
-            check = channels.at(j);
+            check = server.getChannels().at(j);
         if (flags[0] != '#'){
             buffer.erase(0, buffer.find(' ') + 1);
             size_t i = 0;
@@ -239,30 +236,30 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
                 if (username[i][0] == '+')
                     break;
                 if (!check.isInUserList(username[i])){
-                    reply(fd, ":" + Users.at(fd).getFullHostname() + " 441 " + Users.at(fd).getNickname() + " " + tmp + " :User not on the channel\r\n");
+                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 441 " + server.getUsers().at(fd).getNickname() + " " + tmp + " :User not on the channel\r\n");
                 }
                 else{
-                    reply(fd, ":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n");
+                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n");
                 }
             }
             if (i < flags.size() - 1){
                 ;
             }
         }
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 324 " + Users.at(fd).getNickname() + " " + tmp + " +n\r\n");
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +n\r\n");
     }
     else{
-        if (tmp != Users.at(fd).getNickname() && Users.at(fd).getUserMode().find('o') == std::string::npos){
-            reply(fd, ":" + Users.at(fd).getFullHostname() + " 502 " + Users.at(fd).getNickname() + " :Can't change mode for other users\r\n");
+        if (tmp != server.getUsers().at(fd).getNickname() && server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 502 " + server.getUsers().at(fd).getNickname() + " :Can't change mode for other users\r\n");
             return;
         }
-        std::map<int, User>::iterator it = Users.begin();
-        for (; it != Users.end(); it++){
+        std::map<int, User>::iterator it = server.getUsers().begin();
+        for (; it != server.getUsers().end(); it++){
             if (it->second.getNickname() == tmp)
                 break;
         }
-        if (it == Users.end()){
-            reply(fd, ":" + Users.at(fd).getFullHostname() + " 401 " + Users.at(fd).getNickname() + " " + tmp + " :No such nick/channel\r\n");
+        if (it == server.getUsers().end()){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + tmp + " :No such nick/channel\r\n");
             return;
         }
         if (buffer.find(' ') != std::string::npos)
@@ -274,7 +271,7 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
         for (std::string::size_type i = 1; i < buffer.size(); i++)//effacer les doublon et trouver les modes inconnus
         {
             if (buffer[i] != 'w' && buffer[i] != 'i' && buffer[i] != 'o'){
-                reply(fd, ":" + Users.at(fd).getFullHostname() + " 501 " + Users.at(fd).getNickname() + " :Unknown MODE flag\r\n");
+                reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 501 " + server.getUsers().at(fd).getNickname() + " :Unknown MODE flag\r\n");
                 return;
             }
             std::string::size_type j = i + 1;
@@ -286,9 +283,9 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
                     ++j;
             }
         }
-        if (buffer.find('o') != std::string::npos && Users.at(fd).getUserMode().find('o') == std::string::npos)
+        if (buffer.find('o') != std::string::npos && server.getUsers().at(fd).getUserMode().find('o') == std::string::npos)
             buffer.erase(buffer.find('o'), 1);
-        std::string mode = Users.at(fd).getUserMode();
+        std::string mode = server.getUsers().at(fd).getUserMode();
         if (buffer[0] == '+'){
             for (std::string::size_type i = 1; i < buffer.size(); i++){//ajouter des modes
                 if (mode.find(buffer[i]) == std::string::npos)
@@ -301,79 +298,79 @@ void Command::MODE(std::string buffer, int fd, std::map<int, User > & Users, std
                     mode.erase(mode.find(buffer[i]), 1);
             }
         }
-        Users.at(fd).setUserMode(mode);
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 221 " + Users.at(fd).getNickname() + " +" + Users.at(fd).getUserMode() + "\r\n");
+        server.getUsers().at(fd).setUserMode(mode);
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 221 " + server.getUsers().at(fd).getNickname() + " +" + server.getUsers().at(fd).getUserMode() + "\r\n");
     }
 
 };
 
 
-void Command::MOTD(std::string, int fd, std::map<int, User > & Users, std::vector<Channel> &){ // changer (ouvrir un fichier conf/ircd.motd)
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 375 " + Users.at(fd).getNickname() + " :- ClownRC Message of the day\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :-           achatela                                hcarpent\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄           ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇           ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹           ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄           ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄           ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⡄⢸⣯⣥⡴⠒⢊⡁ 🧿 ⢸⣿⣿⣿⣿⣦⠈⠁ 🧿 ⣆⠈⣁⣈⣿⣿⡴         ⡄⢸⣯⣥⡴⠒⢊⡁ ⭕ ⢸⣿⣿⣿⣿⣦⠈⠁ ⭕ ⣆⠈⣁⣈⣿⣿⡴\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿           ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄           ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄           ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄           ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄           ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄           ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄           ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷           ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿             ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿\r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 372 " + Users.at(fd).getNickname() + " :- \r\n");
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 376 " + Users.at(fd).getNickname() + " :End of /MOTD command\r\n");
+void Command::MOTD(std::string, int fd, Server & server){ // changer (ouvrir un fichier conf/ircd.motd)
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 375 " + server.getUsers().at(fd).getNickname() + " :- ClownRC Message of the day\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :-           achatela                                hcarpent\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄           ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇           ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹           ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄           ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄           ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⡄⢸⣯⣥⡴⠒⢊⡁ 🧿 ⢸⣿⣿⣿⣿⣦⠈⠁ 🧿 ⣆⠈⣁⣈⣿⣿⡴         ⡄⢸⣯⣥⡴⠒⢊⡁ ⭕ ⢸⣿⣿⣿⣿⣦⠈⠁ ⭕ ⣆⠈⣁⣈⣿⣿⡴\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿           ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄           ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄           ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄           ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄           ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄           ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄           ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷           ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿             ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- \r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 376 " + server.getUsers().at(fd).getNickname() + " :End of /MOTD command\r\n");
 };
 
 
-void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
     buffer.erase(0, buffer.find(" :") + 2);
     std::string tmp_msg(buffer.substr(0, buffer.find("\r\n")));
 
-    std::map<int, User>::iterator it = Users.begin();
+    std::map<int, User>::iterator it = server.getUsers().begin();
 
     if (tmp_user[0] != '#'){
-        while (it != Users.end()){
+        while (it != server.getUsers().end()){
             if (it->second.getNickname() == tmp_user)
                 break;
             it++;
         }
-        if (it == Users.end()){
-            reply(fd, ":" + Users.at(fd).getFullHostname() + " 401 " + Users.at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
+        if (it == server.getUsers().end()){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
         }
     }
 
     if (tmp_user[0] == '#'){
-        std::vector<Channel>::iterator it = channels.begin();
+        std::vector<Channel>::iterator it = server.getChannels().begin();
 
-        while (it != channels.end()){
+        while (it != server.getChannels().end()){
             if (it->getChannelName() == tmp_user)
                 break;
             it++;
         }
-        if (it == channels.end()){
+        if (it == server.getChannels().end()){
             std::cout << "possible ? " << std::endl;
         }
 
         for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
             if (*ite != fd)
-                reply(*ite, ":" + Users.at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n"); // envoyer à tous les fd
+                reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n"); // envoyer à tous les fd
         }
     }
     else {//if (buffer[0] != 1){
-        for (std::map<int, User>::iterator it = Users.begin(); it != Users.end(); it++){
+        for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
             if (it->second.getNickname() == tmp_user){
-                if (Users.at(it->first).getIsAway() == true){
-                    reply(fd, ":" + Users.at(fd).getFullHostname() + " 301 " + Users.at(fd).getNickname() + " :" + Users.at(it->first).getAwayMsg() + "\r\n");
+                if (server.getUsers().at(it->first).getIsAway() == true){
+                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 301 " + server.getUsers().at(fd).getNickname() + " :" + server.getUsers().at(it->first).getAwayMsg() + "\r\n");
                 }
-                reply(it->first, ":" + Users.at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
+                reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
                 break ;
             }
         }
@@ -382,55 +379,51 @@ void Command::PRIVMSG(std::string buffer, int fd, std::map<int, User > & Users, 
 
 
 
-void Command::NAMES(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::NCTCP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::NETSPLIT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::NETWORK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-//void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (voidfd; (void)Users, (void)channels; return;};
+void Command::NAMES(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::NCTCP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
 
-void Command::NOTICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::NOTICE(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
 
-    std::map<int, User>::iterator it = Users.begin();
+    std::map<int, User>::iterator it = server.getUsers().begin();
 
-    while (it != Users.end()){
+    while (it != server.getUsers().end()){
         if (it->second.getNickname() == tmp_user)
             break;
         it++;
     }
-    reply(it->first, ":" + Users.at(fd).getFullHostname() + " NOTICE " + buffer + "\r\n");
+    reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " NOTICE " + buffer + "\r\n");
 };
 
+void Command::NOTIFY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;}; // notify list empty
 
-void Command::NOTIFY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;}; // notify list empty
-// void Command::OP(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::OPER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::OPER(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     buffer.erase(0, buffer.find(' ') + 1);
-    if (buffer == "KrazyAlexis68!!\r\n"){
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 381 " + Users.at(fd).getNickname() + " :You are now an IRC operator\r\n");
-        std::string mode = Users.at(fd).getUserMode();
-        if (Users.at(fd).getUserMode().find('o') == std::string::npos)
-            Users.at(fd).setUserMode(Users.at(fd).getUserMode() + 'o');
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 221 " + Users.at(fd).getNickname() + " +" + Users.at(fd).getUserMode() + "\r\n");
+    if (buffer == "admin\r\n"){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 381 " + server.getUsers().at(fd).getNickname() + " :You are now an IRC operator\r\n");
+        std::string mode = server.getUsers().at(fd).getUserMode();
+        if (server.getUsers().at(fd).getUserMode().find('o') == std::string::npos)
+            server.getUsers().at(fd).setUserMode(server.getUsers().at(fd).getUserMode() + 'o');
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 221 " + server.getUsers().at(fd).getNickname() + " +" + server.getUsers().at(fd).getUserMode() + "\r\n");
     }
     else
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 464 " + Users.at(fd).getNickname() + " :Password incorrect\r\n");
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 464 " + server.getUsers().at(fd).getNickname() + " :Password incorrect\r\n");
 };
 
 
-void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::PART(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string serv_name(buffer.substr(0, buffer.find("\r\n")));
 
-    std::vector<Channel>::iterator it = channels.begin();
-    for (; it != channels.end(); it++){
+    std::vector<Channel>::iterator it = server.getChannels().begin();
+    for (; it != server.getChannels().end(); it++){
         if (it->getChannelName() == serv_name)
             break;
     }
-    if (it == channels.end()){
+    if (it == server.getChannels().end()){
         std::cout << "CHANNEL CAN'T BE DELETED" << std::endl;
         return ;
     }
@@ -443,77 +436,52 @@ void Command::PART(std::string buffer, int fd, std::map<int, User > & Users, std
             break;
         }
     }
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
     for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
-        reply(*ite, ":" + Users.at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
+        reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
     }
     if (it->getFdList().empty())
-        channels.erase(it);
+        server.getChannels().erase(it);
 };
 
 
-void Command::PING(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & ){
+void Command::PING(std::string buffer, int fd, Server & server ){
     buffer.erase(0, buffer.find(' ') + 1);
-    std::string toSend(":" + Users.at(fd).getFullHostname() + " PONG :" + buffer);
+    std::string toSend(":" + server.getUsers().at(fd).getFullHostname() + " PONG :" + buffer);
     send(fd, toSend.c_str(), toSend.length(), 0);
     if (DEBUG)
         std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
 };
 
-// void Command::QUERY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-
-
-void Command::QUIT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::QUIT(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string leave_msg(buffer.substr(0, buffer.find("\r\n")));
 
-    Users.at(fd).setIsConnected(false);
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
+    server.getUsers().at(fd).setIsConnected(false);
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
 };
 
+void Command::REHASH(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;}; // ??
 
-// void Command::QUOTE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::RAWLOG(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::RECODE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::RECONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::REDRAW(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::REHASH(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;}; // ??
-// void Command::RELOAD(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::RESIZE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-
-
-void Command::RESTART(std::string , int , std::map<int, User > & , std::vector<Channel> & ){
-    ;
+void Command::RESTART(std::string , int , Server & server){
+    (void)server;
 };
 
-
-// void Command::RMRECONNS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::RMREJOINS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::SAVE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::SCONNECT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::SCRIPT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::SCROLLBACK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::SERVER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::SERVLIST(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::SET(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::SETHOST(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::SILENCE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::SQUERY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::SQUIT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::STATS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::STATUSBAR(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::SCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::SERVLIST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::SETHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::SILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::SQUERY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::SQUIT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::STATS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
 
-void Command::TIME(std::string , int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::TIME(std::string , int fd, Server & server){
     std::time_t time = std::time(NULL);
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " 391 " + Users.at(fd).getNickname() + " ClownRC :" + std::asctime(std::localtime(&time)) + "\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 391 " + server.getUsers().at(fd).getNickname() + " ClownRC :" + std::asctime(std::localtime(&time)) + "\r\n");
 };
 
-
-// void Command::TOGGLE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-
-
-void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){
+void Command::TOPIC(std::string buffer, int fd,  Server & server){
 
     buffer.erase(0, buffer.find(' ') + 1);
     std::string chan_name(buffer.substr(0, buffer.find(" ")));
@@ -523,159 +491,101 @@ void Command::TOPIC(std::string buffer, int fd, std::map<int, User > & Users, st
     if (chan_name[0] != '#'){
         std::string toFind = "#" + chan_name;
     }  
-    std::vector<Channel>::iterator it = channels.begin();
+    std::vector<Channel>::iterator it = server.getChannels().begin();
 
-    while (it != channels.end()){
+    while (it != server.getChannels().end()){
         if (it->getChannelName() == toFind)
             break;
         it++;
     }
-    if (it == channels.end()){
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 442 " + Users.at(fd).getNickname() + " " + chan_name + " :You're not on that channel\r\n");
+    if (it == server.getChannels().end()){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You're not on that channel\r\n");
         return;
     }
 
-    reply(fd, ":" + Users.at(fd).getFullHostname() + " TOPIC " + chan_name + " " + buffer);
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " TOPIC " + chan_name + " " + buffer);
     it->clearTopic();
     it->setTopic(buffer);
 };
 
 
-void Command::TRACE(std::string , int , std::map<int, User > & , std::vector<Channel> & ){
-    ;
+void Command::TRACE(std::string , int , Server & server){
+    (void)server;
 };
 
-
-// void Command::TS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::UNALIAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::UNBAN(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::UNIGNORE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::UNLOAD(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::UNNOTIFY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::UNQUERY(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::UNSILENCE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::UPGRADE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::UPTIME(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::USERHOST(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::VER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::VERSION(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::VOICE(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::WAIT(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::WALL(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-void Command::WALLOPS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::UNBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::UNSILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::UPGRADE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::USERHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::VERSION(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::WALLOPS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
 
-void Command::WHO(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::WHO(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find("\r\n")));
 
     if (tmp[0] == '#'){
-        reply(fd, ":" + Users.at(fd).getFullHostname() + " 315 " + Users.at(fd).getNickname() + " " + Users.at(fd).getUsername() + " :End of /WHO list\r\n");
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 315 " + server.getUsers().at(fd).getNickname() + " " + server.getUsers().at(fd).getUsername() + " :End of /WHO list\r\n");
     }
 };
 
 
-void Command::WHOIS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::WHOIS(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     std::string toFind(tmp.substr(0, tmp.find("\r\n")));
     (void)fd;
-    for (std::map<int, User>::iterator it = Users.begin(); it != Users.end(); it++){
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
         if (it->second.getUsername() == toFind){
-            reply(fd, ":" + Users.at(fd).getFullHostname() + " 311 " + Users.at(fd).getNickname() + " " + toFind + " " + it->second.getHostname() + " * :" + it->second.getRealName() + "\r\n");
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 311 " + server.getUsers().at(fd).getNickname() + " " + toFind + " " + it->second.getHostname() + " * :" + it->second.getRealName() + "\r\n");
             return;
         }
     }
 };
 
 
-void Command::WHOWAS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
-// void Command::WINDOW(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels){(void)buffer; (void)fd; (void)Users, (void)channels; return;};
+void Command::WHOWAS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
 
-void Command::PASS(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::PASS(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
-    Users.at(fd).setPassword(buffer.substr(0, buffer.find("\r\n")));
-    // if (Users.at(fd).getPassword()[Users.at(fd).getPassword().length() - 1] == '\r')
-    //     Users.at(fd).getPassword().erase(0, Users.at(fd).getPassword().end() - 1);
-    // std::cout << "password: " << Users.at(fd).getPassword() << std::endl;
+    server.getUsers().at(fd).setPassword(buffer.substr(0, buffer.find("\r\n")));
     return;
 }
 
 
-void Command::NICK(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::NICK(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     buffer = buffer.substr(0, buffer.find("\r\n"));
     if (buffer.find('\b') != std::string::npos || buffer.find('\r') != std::string::npos
         || buffer.find('@') != std::string::npos || buffer.find('\0') != std::string::npos || buffer.find(' ') != std::string::npos){
-            reply(fd, ":" + Users.at(fd).getFullHostname() + " 432 " + Users.at(fd).getNickname() + " :Nickname " + buffer + " is invalid !\r\n");
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 432 " + server.getUsers().at(fd).getNickname() + " :Nickname " + buffer + " is invalid !\r\n");
             return ;
     }
-    for (std::map<int, User >::iterator it = Users.begin() ; it != Users.end(); it++){
+    for (std::map<int, User >::iterator it = server.getUsers().begin() ; it != server.getUsers().end(); it++){
         if (it->second.getNickname() == buffer){
             reply(fd, ": 433 * " + buffer + " :Nickname is already in use\r\n");
             return ;
         }
     }
-    Users.at(fd).setNickname(buffer);
+    server.getUsers().at(fd).setNickname(buffer);
     reply(fd, ": NICK " + buffer + "\r\n");
     return;
 }
 
 
-void Command::USER(std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> &){
+void Command::USER(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
-    Users.at(fd).setUsername(buffer.substr(0, buffer.find(' ')));
+    server.getUsers().at(fd).setUsername(buffer.substr(0, buffer.find(' ')));
     buffer.erase(0, buffer.find(' ') + 1);
     //c'est quoi ? <mode> ?
     buffer.erase(0, buffer.find(' ') + 1);
-    //Users.at(fd).setHostname(buffer.substr(0, buffer.find(" :")));
+    //server.getUsers().at(fd).setHostname(buffer.substr(0, buffer.find(" :")));
     buffer.erase(0, buffer.find(" :") + 2);
-    Users.at(fd).setRealName(buffer.substr(0, buffer.find("\r\n")));
-    // if (Users.at(fd).getUsername()[Users.at(fd).getUsername().length() - 1] == '\r')
-    //     Users.at(fd).getUsername().erase(0, Users.at(fd).getUsername().end() - 1);
-    // if (Users.at(fd).getRealName()[Users.at(fd).getRealName().length() - 1] == '\r')
-    //     Users.at(fd).getRealName().erase(0, Users.at(fd).getRealName().end() - 1);
+    server.getUsers().at(fd).setRealName(buffer.substr(0, buffer.find("\r\n")));
     if (DEBUG){
-        // std::cout << "username: " << Users.at(fd).getUsername() << std::endl;
-        // std::cout << "hostname: " << Users.at(fd).getHostname() << std::endl;
-        // std::cout << "real_name: " << Users.at(fd).getRealName() << std::endl;
+       ;
     }
-    // if ((Users.at(fd).getBuffer().empty() || Users.at(fd).getHostname().empty() || Users.at(fd).getNickname().empty()
-    //     ||  Users.at(fd).getPassword().empty() || Users.at(fd).getRealName().empty() || Users.at(fd).getUsername().empty()))
-    //     Users.at(fd).setAccess(FORBIDDEN);
-    // else{
-    //     if (Users.at(fd).getRealPassword().empty())
-    //         Users.at(fd).setAccess(AUTHORIZED);
-    //     else{
-    //         if (Users.at(fd).getPassword() != Users.at(fd).getRealPassword()){
-    //             Users.at(fd).setAccess(FORBIDDEN);
-    //         }
-    //         else
-    //             Users.at(fd).setAccess(AUTHORIZED);
-    //     }
-    // }
-    // if (Users.at(fd).getAccess() == AUTHORIZED){
-
-        // std::map<int, User >::iterator it = Users.begin();
-        // for (; it != Users.end(); it++){
-        //     if (it->first != fd && it->second.getFullInfo() == Users.at(fd).getFullInfo())
-        //         break;
-        // }
-        // if (it != Users.end()){
-        //     if (it->second.getIsConnected() == true){
-        //         std::string toSend(":" + Users.at(fd).getFullHostname() + " 432 " + Users.at(fd).getNickname() +  " :Nickname " + Users.at(fd).getNickname() + " is already in use !\r\n");
-        //         send(fd, toSend.c_str(), toSend.length(), 0);
-        //         Users.at(fd).setAccess(FORBIDDEN);
-        //         return ;
-        //     }
-        //     else
-        //         std::cout << "User disconncted" << std::endl;
-        // }
-
-        //reply(fd, ":" + Users.at(fd).getFullHostname() + " 001 " + Users.at(fd).getNickname() + " Welcome to the Internet Relay Network " + Users.at(fd).getFullHostname());
-        // std::cout << toSend << std::endl;
-    //}
-    //reply(fd, ":" + Users.at(fd).getFullHostname() + " 001 " + Users.at(fd).getNickname() + " Welcome to the Internet Relay Network " + Users.at(fd).getFullHostname());
     return;
 }
 
@@ -705,6 +615,7 @@ Command::Command(void){
     _commandsFilled["WHOIS"] = WHOIS;
     _commandsFilled["OPER"] = OPER;
     _commandsFilled["kill"] = KILL;
+    _commandsFilled["KICK"] = KICK;
 };
 
 Command::~Command(void){

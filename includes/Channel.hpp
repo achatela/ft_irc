@@ -35,8 +35,9 @@ class Channel{
 
         bool isInUserList(std::string name){
             size_t i = 0;
-            for (;_user_list[i] != name; i++){
-                ;
+            for (;i < _user_list.size(); i++){
+                if(_user_list[i] != name)
+                    break ;
             }
             if (_user_list[i] == name)
                 return true;

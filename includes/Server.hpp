@@ -15,7 +15,8 @@ class Server{
         int _server_listen;
         int _port;
 
-        std::map<std::string, void (*) (std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels)> _command_functions;
+        // std::map<std::string, void (*) (std::string buffer, int fd, std::map<int, User > & Users, std::vector<Channel> & channels)> _command_functions;
+        std::map<std::string, void (*) (std::string buffer, int fd, Server & server)> _command_functions;
         std::vector<pollfd > _pfds;
         std::string _password;
 
@@ -40,6 +41,10 @@ class Server{
         void sondage(); //nom a change
         void addPfd();
         void checkInfo(User & user, int fd);
+
+        std::map<int, User>& getUsers(){return _Users;}
+        std::vector<pollfd>& getPfds(){return _pfds;}
+        std::vector<Channel>& getChannels(){return _channels;}
 };
 
 #endif
