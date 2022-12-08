@@ -22,7 +22,7 @@ class Channel{
 
     public:
 
-        Channel() : _channel_mode("n"){;};
+        Channel() : _channel_mode("n"), _ban_list(10, "ee"){;};
         ~Channel(){;};
 
         void pushFdList(int fd){_fd_list.push_back(fd);};

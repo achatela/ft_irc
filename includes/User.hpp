@@ -51,7 +51,7 @@ class User{
         void setHost(std::string host){_host = host; return;};
         std::string getHostname(){return _hostname;};
         void setHostname(std::string hostname){_hostname = hostname; return;};
-        std::string getDomainname(){return _domain_name;};
+        std::string getDomainName(){return _domain_name;};
         void setDomainName(std::string domain_name){_domain_name = domain_name; return;};
         std::string getRealPassword(){return _real_password;};
         bool getAccess(){return _access;};

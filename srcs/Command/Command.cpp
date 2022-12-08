@@ -99,6 +99,14 @@ void Command::JOIN(std::string buffer, int fd,  Server & server){
     }
     else
         it->getUserMode()[fd] += "w";
+    std::cout << it->getChannelName();
+    for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it->getBanList().end(); it2++){
+        std::cout << *it2 << std::endl;
+        if ("*!*" + server.getUsers()[fd].getUsername() + "@*" + server.getUsers()[fd].getDomainName() == *it2){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 474 " +  server.getUsers().at(fd).getNickname() + " :You are banned from this channel\r\n");
+            return;
+        }
+    }
     it->pushFdList(fd); // protéger si l'user n'a pas les droits
     it->getUserList().push_back(server.getUsers().at(fd).getNickname());
     std::string msg = "@";
@@ -233,7 +241,11 @@ void Command::MAP(std::string, int fd,  Server &){
 
 void Command::MODE(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
-    std::string tmp(buffer.substr(0, buffer.find(" ")));
+    std::string tmp;
+    if (buffer.find(" ") == std::string::npos)
+        tmp = buffer.substr(0, buffer.find("\r\n"));
+    else
+        tmp = buffer.substr(0, buffer.find(" "));
     if (buffer.find(' ') != std::string::npos)
         buffer.erase(0, buffer.find(' ') + 1);
     if (tmp[0] == '#'){
@@ -246,7 +258,6 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
         }
         else
             check = server.getChannels().at(j);
-        std::cout << "flags:" << flags << " buffer:" << buffer << std::endl;
         if (flags == buffer)
         {
             reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + check.getChannelMode() + "\r\n");
@@ -255,10 +266,15 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
         if (flags[0] != '#'){
             if (buffer.substr(0, buffer.find(' ')) == "+b"){
                 std::string flagban = buffer.substr(0, buffer.find("\r\n"));
-                check.getBanList().push_back(buffer.substr(0, buffer.find("\r\n")));
+                check.getBanList().push_back(buffer.substr(3, buffer.find("\r\n")));
+                std::cout << check.getChannelName() << std::endl;
                 for (std::vector<int>::iterator it = check.getFdList().begin(); it != check.getFdList().end(); it++){
-                    reply(*it, ":" + server.getUsers().at(fd).getFullHostname() + " MODE " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flagban + "\r\n");
+                    reply(*it, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flagban + "\r\n");
                 }
+                for (std::vector<std::string>::iterator it2 = check.getBanList().begin(); it2 != check.getBanList().end(); it2++){
+                    std::cout << *it2 << std::endl;
+                }
+                std::cout << check.getChannelName() << std::endl;
                 return;
             }
             buffer.erase(0, buffer.find(' ') + 1);
