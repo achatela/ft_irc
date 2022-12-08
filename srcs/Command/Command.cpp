@@ -507,7 +507,7 @@ void Command::QUIT(std::string buffer, int fd, Server & server){
 void Command::REHASH(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;}; // ??
 
 void Command::RESTART(std::string , int , Server & server){
-    (void)server;
+    server.setStatus(REBOOT);
 };
 
 void Command::SCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
