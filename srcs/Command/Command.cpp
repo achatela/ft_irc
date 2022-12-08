@@ -8,7 +8,7 @@ void Command::reply(int fd, std::string toSend){
 }
 
 void Command::ACCEPT(std::string, int fd, Server &){
-    reply(fd, "Unknown command: ACCEPT\r\n");
+    reply(fd, "Unsupported command: ACCEPT\r\n");
 };
 
 void Command::ADMIN(std::string, int fd, Server & server){
@@ -53,7 +53,7 @@ void Command::INFO(std::string, int fd, Server & server){
 
 
 void Command::INVITE(std::string, int fd,  Server &){
-    reply(fd, "Unknown command: INVITE\r\n");
+    reply(fd, "Unsupported command: INVITE\r\n");
 }
 
 
@@ -226,22 +226,26 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
         }
         else
             check = server.getChannels().at(j);
+        if (flags == buffer)
+        {
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + check.getChannelMode() + "\r\n");
+            return;
+        }
         if (flags[0] != '#'){
-            buffer.erase(0, buffer.find(' ') + 1);
             if (buffer.substr(0, buffer.find(' ')) == "+b"){
-                std::string flag = buffer.substr(0, buffer.find("\r\n"));
+                std::string flagban = buffer.substr(0, buffer.find("\r\n"));
                 check.getBanList().push_back(buffer.substr(0, buffer.find("\r\n")));
                 for (std::vector<int>::iterator it = check.getFdList().begin(); it != check.getFdList().end(); it++){
-                    reply(*it, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n");
+                    reply(*it, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flagban + "\r\n");
                 }
                 return;
             }
+            buffer.erase(0, buffer.find(' ') + 1);
             size_t i = 0;
             for(; buffer[i] != '\r'; i++){
                 if (buffer[i] == ' ' && buffer[i + 1] != '+')
                     space_num++;
             }
-            std::cout << buffer <<std::endl;
             std::string username[space_num + 1];
             i = 0;
             for (; i <= space_num; i++){
@@ -494,8 +498,18 @@ void Command::RESTART(std::string , int , Server & server){
 };
 
 void Command::SCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::SERVLIST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::SETHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+
+
+void Command::SERVLIST(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SERVLIST\r\n");
+};
+
+
+void Command::SETHOST(std::string buffer, int fd,  Server & server){
+    reply(fd, "Unknown command: SETHOST\r\n");
+};
+
+
 void Command::SILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 void Command::SQUERY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 void Command::SQUIT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
@@ -535,14 +549,28 @@ void Command::TOPIC(std::string buffer, int fd,  Server & server){
 };
 
 
-void Command::TRACE(std::string , int , Server & server){
-    (void)server;
+void Command::TRACE(std::string , int fd, Server & ){
+    reply(fd, "Unsupported command: TRACE\r\n");
 };
 
 void Command::UNBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 void Command::UNSILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
-void Command::USERHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+
+void Command::USERHOST(std::string buffer, int fd,  Server & server){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string tmp(buffer.substr(0, buffer.find(" ")));
+    std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+    std::string userhost;
+
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+        if (it->second.getNickname() == toFind){
+            userhost = it->second.getUserHost();
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 302 " + server.getUsers().at(fd).getNickname() + " " + userhost + "\r\n");
+        }
+    }
+};
+
 
 void Command::WALLOPS(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -573,6 +601,7 @@ void Command::WHOIS(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+
     for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
         if (it->second.getNickname() == toFind){
             reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 311 " + server.getUsers().at(fd).getNickname() + " " + toFind + " " + it->second.getUsername() + " " + server.getUsers().at(fd).getHostname() + " * :" + it->second.getRealName() + "\r\n");
@@ -580,6 +609,7 @@ void Command::WHOIS(std::string buffer, int fd, Server & server){
             return;
         }
     }
+
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :No such nick/channel\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 318 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :End of /WHOIS list\r\n");
 };
@@ -672,6 +702,9 @@ Command::Command(void){
     _commandsFilled["INVITE"] = INVITE;
     _commandsFilled["WHOWAS"] = WHOWAS;
     _commandsFilled["wallops"] = WALLOPS;
+    _commandsFilled["userhost"] = USERHOST;
+    _commandsFilled["SETHOST"] = SETHOST;
+    _commandsFilled["SERVLIST"] = SERVLIST;
 };
 
 Command::~Command(void){
