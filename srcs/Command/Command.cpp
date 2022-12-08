@@ -109,9 +109,6 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
         return;
     }
 
-    //Check si l'user est operator/operator de channel
-
-
     std::vector<std::string>::iterator it2 = it->getUserList().begin();
     for (; it2 != it->getUserList().end(); it2++){
         if (*it2 == nickname)
@@ -121,6 +118,12 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
         reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
         return;
     }
+
+    if (server.getUsers().at(fd).getUserMode().find("o") == std::string::npos /* && it->getUserMode().at(fd).find("o") == std::string::npos*/){ // check if he's chan op too
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You're not channel operator\r\n");
+        return ;
+    }
+
     std::vector<int>::iterator it3 = it->getFdList().begin();
     for (; it3 != it->getFdList().end(); it3++){
         reply(*it3, ":" + server.getUsers().at(fd).getFullHostname() + " KICK " + chan_name + " " + nickname + " :\r\n");
