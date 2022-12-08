@@ -19,16 +19,25 @@ void Command::ADMIN(std::string, int fd, Server & server){
 };
 
 void Command::AWAY(std::string buffer, int fd, Server & server){
+    bool empty = false;
+    if (buffer.size() == 6)
+        empty = true;
     buffer.erase(0, buffer.find(' ') + 2);
     std::string away_msg(buffer.substr(0, buffer.find("\r\n")));
 
-    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 306 " + server.getUsers().at(fd).getNickname() + " :You have been marked as begin away\r\n");
-    server.getUsers().at(fd).setIsAway(true);
-    server.getUsers().at(fd).setAwayMsg(away_msg);
+    if (!empty){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 306 " + server.getUsers().at(fd).getNickname() + " :You have been marked as begin away\r\n");
+        server.getUsers().at(fd).setIsAway(true);
+        server.getUsers().at(fd).setAwayMsg(away_msg);
+        return ;
+    }
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 305 " + server.getUsers().at(fd).getNickname() + " :You are no longer marked as being away\r\n");
+    server.getUsers().at(fd).setIsAway(false);
+    server.getUsers().at(fd).getAwayMsg().clear();
 };
 
 
-void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+// void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 void Command::DIE(std::string, int fd, Server & server){
     if (server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
@@ -57,7 +66,17 @@ void Command::INVITE(std::string, int fd,  Server &){
 }
 
 
-void Command::ISO(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::ISO(std::string buffer, int fd,  Server & server){
+    buffer.erase(0, buffer.find(' ') + 2);
+    std::string tmp(buffer.substr(0, buffer.find(" ")));
+    std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+
+      for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+        if (it->second.getNickname() == toFind){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 303 " + server.getUsers().at(fd).getNickname() + " :" + toFind + "\r\n");
+        }
+    }
+};
 
 
 void Command::JOIN(std::string buffer, int fd,  Server & server){
@@ -146,9 +165,6 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
 };
 
 
-void Command::KICKBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-
-
 void Command::KILL(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string nickname =  buffer.substr(0, buffer.find(' '));
@@ -178,7 +194,9 @@ void Command::KILL(std::string buffer, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
 };
 
-void Command::LINKS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::LINKS(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: LINKS\r\n");
+};
 
 
 void Command::LIST(std::string buffer, int fd,  Server & server){
@@ -209,7 +227,9 @@ void Command::LIST(std::string buffer, int fd,  Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 323 " + server.getUsers().at(fd).getUsername() + " :End of /LIST\r\n");
 };
 
-void Command::MAP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::MAP(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: MAP\r\n");
+};
 
 void Command::MODE(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -226,6 +246,7 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
         }
         else
             check = server.getChannels().at(j);
+        std::cout << "flags:" << flags << " buffer:" << buffer << std::endl;
         if (flags == buffer)
         {
             reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + check.getChannelMode() + "\r\n");
@@ -236,7 +257,7 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
                 std::string flagban = buffer.substr(0, buffer.find("\r\n"));
                 check.getBanList().push_back(buffer.substr(0, buffer.find("\r\n")));
                 for (std::vector<int>::iterator it = check.getFdList().begin(); it != check.getFdList().end(); it++){
-                    reply(*it, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flagban + "\r\n");
+                    reply(*it, ":" + server.getUsers().at(fd).getFullHostname() + " MODE " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flagban + "\r\n");
                 }
                 return;
             }
@@ -398,21 +419,15 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
     else {//if (buffer[0] != 1){
         for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
             if (it->second.getNickname() == tmp_user){
-                if (server.getUsers().at(it->first).getIsAway() == true){
-                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 301 " + server.getUsers().at(fd).getNickname() + " :" + server.getUsers().at(it->first).getAwayMsg() + "\r\n");
-                }
                 reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
+                if (server.getUsers().at(it->first).getIsAway() == true){
+                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 301 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :" + server.getUsers().at(it->first).getAwayMsg() + "\r\n");
+                }
                 break ;
             }
         }
     }
 };
-
-
-
-void Command::NAMES(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::NCTCP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-
 
 void Command::NOTICE(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -427,8 +442,6 @@ void Command::NOTICE(std::string buffer, int fd, Server & server){
     }
     reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " NOTICE " + buffer + "\r\n");
 };
-
-void Command::NOTIFY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;}; // notify list empty
 
 void Command::OPER(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -505,15 +518,29 @@ void Command::SERVLIST(std::string, int fd,  Server &){
 };
 
 
-void Command::SETHOST(std::string buffer, int fd,  Server & server){
+void Command::SETHOST(std::string, int fd,  Server &){
     reply(fd, "Unknown command: SETHOST\r\n");
 };
 
 
-void Command::SILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::SQUERY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::SQUIT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::STATS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::SILENCE(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SILENCE\r\n");
+};
+
+
+void Command::SQUERY(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SQUERY\r\n");
+};
+
+
+void Command::SQUIT(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SQUIT\r\n");
+};
+
+
+void Command::STATS(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SQUIT\r\n");
+};
 
 
 void Command::TIME(std::string , int fd, Server & server){
@@ -705,6 +732,13 @@ Command::Command(void){
     _commandsFilled["userhost"] = USERHOST;
     _commandsFilled["SETHOST"] = SETHOST;
     _commandsFilled["SERVLIST"] = SERVLIST;
+    _commandsFilled["squit"] = SQUIT;
+    _commandsFilled["squery"] = SQUERY;
+    _commandsFilled["silence"] = SILENCE;
+    _commandsFilled["stats"] = STATS;
+    _commandsFilled["ison"] = ISO;
+    _commandsFilled["map"] = MAP;
+    _commandsFilled["links"] = LINKS;
 };
 
 Command::~Command(void){
