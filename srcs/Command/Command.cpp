@@ -535,8 +535,6 @@ void Command::UNSILENCE(std::string buffer, int fd,  Server & server){(void)buff
 
 void Command::USERHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
-
-
 void Command::WALLOPS(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string msg(buffer.substr(0, buffer.find(" ")));
@@ -566,17 +564,26 @@ void Command::WHOIS(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     std::string toFind(tmp.substr(0, tmp.find("\r\n")));
-    (void)fd;
     for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
-        if (it->second.getUsername() == toFind){
-            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 311 " + server.getUsers().at(fd).getNickname() + " " + toFind + " " + it->second.getHostname() + " * :" + it->second.getRealName() + "\r\n");
+        if (it->second.getNickname() == toFind){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 311 " + server.getUsers().at(fd).getNickname() + " " + toFind + " " + it->second.getUsername() + " " + server.getUsers().at(fd).getHostname() + " * :" + it->second.getRealName() + "\r\n");
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 318 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :End of /WHOIS list\r\n");
             return;
         }
     }
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :No such nick/channel\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 318 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :End of /WHOIS list\r\n");
 };
 
 
-void Command::WHOWAS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::WHOWAS(std::string buffer, int fd,  Server & server){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string tmp(buffer.substr(0, buffer.find(" ")));
+    std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 406 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :There was no such nickname\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 369 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :End of /WHOWAS list\r\n");
+};
 
 void Command::PASS(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -654,6 +661,7 @@ Command::Command(void){
     _commandsFilled["kill"] = KILL;
     _commandsFilled["KICK"] = KICK;
     _commandsFilled["INVITE"] = INVITE;
+    _commandsFilled["WHOWAS"] = WHOWAS;
     _commandsFilled["wallops"] = WALLOPS;
 };
 
