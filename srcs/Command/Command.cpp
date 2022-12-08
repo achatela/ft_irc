@@ -8,7 +8,7 @@ void Command::reply(int fd, std::string toSend){
 }
 
 void Command::ACCEPT(std::string, int fd, Server &){
-    reply(fd, "Unknown command: ACCEPT\r\n");
+    reply(fd, "Unsupported command: ACCEPT\r\n");
 };
 
 void Command::ADMIN(std::string, int fd, Server & server){
@@ -53,7 +53,7 @@ void Command::INFO(std::string, int fd, Server & server){
 
 
 void Command::INVITE(std::string, int fd,  Server &){
-    reply(fd, "Unknown command: INVITE\r\n");
+    reply(fd, "Unsupported command: INVITE\r\n");
 }
 
 
@@ -485,8 +485,18 @@ void Command::RESTART(std::string , int , Server & server){
 };
 
 void Command::SCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::SERVLIST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::SETHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+
+
+void Command::SERVLIST(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SERVLIST\r\n");
+};
+
+
+void Command::SETHOST(std::string buffer, int fd,  Server & server){
+    reply(fd, "Unknown command: SETHOST\r\n");
+};
+
+
 void Command::SILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 void Command::SQUERY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 void Command::SQUIT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
@@ -526,8 +536,8 @@ void Command::TOPIC(std::string buffer, int fd,  Server & server){
 };
 
 
-void Command::TRACE(std::string , int , Server & server){
-    (void)server;
+void Command::TRACE(std::string , int fd, Server & ){
+    reply(fd, "Unsupported command: TRACE\r\n");
 };
 
 void Command::UNBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
@@ -680,6 +690,8 @@ Command::Command(void){
     _commandsFilled["WHOWAS"] = WHOWAS;
     _commandsFilled["wallops"] = WALLOPS;
     _commandsFilled["userhost"] = USERHOST;
+    _commandsFilled["SETHOST"] = SETHOST;
+    _commandsFilled["SERVLIST"] = SERVLIST;
 };
 
 Command::~Command(void){
