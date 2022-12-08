@@ -533,7 +533,21 @@ void Command::TRACE(std::string , int , Server & server){
 void Command::UNBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 void Command::UNSILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
-void Command::USERHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+
+void Command::USERHOST(std::string buffer, int fd,  Server & server){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string tmp(buffer.substr(0, buffer.find(" ")));
+    std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+    std::string userhost;
+
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+        if (it->second.getNickname() == toFind){
+            userhost = it->second.getUserHost();
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 302 " + server.getUsers().at(fd).getNickname() + " " + userhost + "\r\n");
+        }
+    }
+};
+
 
 void Command::WALLOPS(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -564,6 +578,7 @@ void Command::WHOIS(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+
     for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
         if (it->second.getNickname() == toFind){
             reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 311 " + server.getUsers().at(fd).getNickname() + " " + toFind + " " + it->second.getUsername() + " " + server.getUsers().at(fd).getHostname() + " * :" + it->second.getRealName() + "\r\n");
@@ -571,6 +586,7 @@ void Command::WHOIS(std::string buffer, int fd, Server & server){
             return;
         }
     }
+
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :No such nick/channel\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 318 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :End of /WHOIS list\r\n");
 };
@@ -663,6 +679,7 @@ Command::Command(void){
     _commandsFilled["INVITE"] = INVITE;
     _commandsFilled["WHOWAS"] = WHOWAS;
     _commandsFilled["wallops"] = WALLOPS;
+    _commandsFilled["userhost"] = USERHOST;
 };
 
 Command::~Command(void){

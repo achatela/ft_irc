@@ -69,6 +69,22 @@ class User{
         void setAwayMsg(std::string msg){_awayMsg = msg;};
         std::string getAwayMsg(){return _awayMsg;};
 
+        std::string getUserHost(){
+            std::string ret;
+        
+            ret += ":" + _nickname + "="; 
+            if (_isAway == true)
+                ret += "-";
+            else
+                ret += "+";
+            if (_usermode.find("o") == std::string::npos)
+                ret += "~";
+            else
+                ret += "*";
+            ret += _username + "@" + _hostname;
+            return ret;
+        };
+
         // bool operator!= (User &tmp){return (getFullInfo() == tmp.getFullInfo());}
 };
 
