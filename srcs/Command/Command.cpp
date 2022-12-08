@@ -57,7 +57,17 @@ void Command::INVITE(std::string, int fd,  Server &){
 }
 
 
-void Command::ISO(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::ISO(std::string buffer, int fd,  Server & server){
+    buffer.erase(0, buffer.find(' ') + 2);
+    std::string tmp(buffer.substr(0, buffer.find(" ")));
+    std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+
+      for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+        if (it->second.getNickname() == toFind){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 303 " + server.getUsers().at(fd).getNickname() + " :" + toFind + "\r\n");
+        }
+    }
+};
 
 
 void Command::JOIN(std::string buffer, int fd,  Server & server){
@@ -146,7 +156,7 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
 };
 
 
-void Command::KICKBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+// void Command::KICKBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
 void Command::KILL(std::string buffer, int fd, Server & server){
@@ -395,12 +405,6 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
     }
 };
 
-
-
-void Command::NAMES(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::NCTCP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-
-
 void Command::NOTICE(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
@@ -414,8 +418,6 @@ void Command::NOTICE(std::string buffer, int fd, Server & server){
     }
     reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " NOTICE " + buffer + "\r\n");
 };
-
-void Command::NOTIFY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;}; // notify list empty
 
 void Command::OPER(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -492,15 +494,29 @@ void Command::SERVLIST(std::string, int fd,  Server &){
 };
 
 
-void Command::SETHOST(std::string buffer, int fd,  Server & server){
+void Command::SETHOST(std::string, int fd,  Server &){
     reply(fd, "Unknown command: SETHOST\r\n");
 };
 
 
-void Command::SILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::SQUERY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::SQUIT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::STATS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::SILENCE(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SILENCE\r\n");
+};
+
+
+void Command::SQUERY(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SQUERY\r\n");
+};
+
+
+void Command::SQUIT(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SQUIT\r\n");
+};
+
+
+void Command::STATS(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: SQUIT\r\n");
+};
 
 
 void Command::TIME(std::string , int fd, Server & server){
@@ -692,6 +708,11 @@ Command::Command(void){
     _commandsFilled["userhost"] = USERHOST;
     _commandsFilled["SETHOST"] = SETHOST;
     _commandsFilled["SERVLIST"] = SERVLIST;
+    _commandsFilled["squit"] = SQUIT;
+    _commandsFilled["squery"] = SQUERY;
+    _commandsFilled["silence"] = SILENCE;
+    _commandsFilled["stats"] = STATS;
+    _commandsFilled["ison"] = ISO;
 };
 
 Command::~Command(void){
