@@ -8,6 +8,7 @@ void Command::reply(int fd, std::string toSend){
 }
 
 void Command::ACCEPT(std::string, int fd, Server & server){
+    (void)server;
     reply(fd, "Unknown command: ACCEPT\r\n");
 };
 
@@ -28,16 +29,17 @@ void Command::AWAY(std::string buffer, int fd, Server & server){
 };
 
 
-void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::CYCLE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::CYCLE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
 void Command::DIE(std::string, int, Server & server){
+    (void)server;
     exit(1);
 };
 
 
-void Command::DISCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::DISCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 void Command::INFO(std::string, int fd, Server & server){
     std::string debug_str;
@@ -53,8 +55,8 @@ void Command::INFO(std::string, int fd, Server & server){
 };
 
 
-void Command::INVITE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::ISO(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::INVITE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::ISO(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
 void Command::JOIN(std::string buffer, int fd,  Server & server){
@@ -137,7 +139,7 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
 };
 
 
-void Command::KICKBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::KICKBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
 void Command::KILL(std::string buffer, int fd, Server & server){
@@ -169,7 +171,7 @@ void Command::KILL(std::string buffer, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
 };
 
-void Command::LINKS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::LINKS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
 void Command::LIST(std::string buffer, int fd,  Server & server){
@@ -200,7 +202,7 @@ void Command::LIST(std::string buffer, int fd,  Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 323 " + server.getUsers().at(fd).getUsername() + " :End of /LIST\r\n");
 };
 
-void Command::MAP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::MAP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 void Command::MODE(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -379,8 +381,8 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
 
 
 
-void Command::NAMES(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::NCTCP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::NAMES(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::NCTCP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
 void Command::NOTICE(std::string buffer, int fd, Server & server){
@@ -397,7 +399,7 @@ void Command::NOTICE(std::string buffer, int fd, Server & server){
     reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " NOTICE " + buffer + "\r\n");
 };
 
-void Command::NOTIFY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;}; // notify list empty
+void Command::NOTIFY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;}; // notify list empty
 
 void Command::OPER(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -461,19 +463,19 @@ void Command::QUIT(std::string buffer, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
 };
 
-void Command::REHASH(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;}; // ??
+void Command::REHASH(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;}; // ??
 
 void Command::RESTART(std::string , int , Server & server){
     (void)server;
 };
 
-void Command::SCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::SERVLIST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::SETHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::SILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::SQUERY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::SQUIT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::STATS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::SCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::SERVLIST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::SETHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::SILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::SQUERY(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::SQUIT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::STATS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
 void Command::TIME(std::string , int fd, Server & server){
@@ -513,12 +515,12 @@ void Command::TRACE(std::string , int , Server & server){
     (void)server;
 };
 
-void Command::UNBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::UNSILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::UPGRADE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::USERHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::VERSION(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
-void Command::WALLOPS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::UNBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::UNSILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::UPGRADE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::USERHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::VERSION(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::WALLOPS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
 void Command::WHO(std::string buffer, int fd, Server & server){
@@ -545,7 +547,7 @@ void Command::WHOIS(std::string buffer, int fd, Server & server){
 };
 
 
-void Command::WHOWAS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd;   return;};
+void Command::WHOWAS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 void Command::PASS(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);

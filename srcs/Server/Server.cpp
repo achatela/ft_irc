@@ -141,17 +141,19 @@ void Server::checkInfo(User & user, int fd)
         send(fd, toSend2.c_str(), toSend2.length(), 0);
         std::string toSend3(":" + user.getFullHostname() + " 003 " + user.getNickname() + " :This server was created " + std::asctime(std::localtime(&_server_time)) + "\r\n");
         send(fd, toSend3.c_str(), toSend3.length(), 0);
-        std::string toSend4(":" + user.getFullHostname() + " 004 " + user.getNickname() + " :ClownRC 1.0 aiwro Oovimnptkl\r\n");
+        std::string toSend4(":" + user.getFullHostname() + " 004 " + user.getNickname() + " :ClownRC 1.0 iwo Oovimnptkl\r\n");
         send(fd, toSend4.c_str(), toSend4.length(), 0);
-        std::string toSend5(":" + user.getFullHostname() + " 251 " + user.getNickname() + " :There are X users and X invisible on X servers\r\n");
+        std::stringstream stream2;
+        stream2 << _Users.size() - atoi(getInvisibleUsers().c_str());
+        std::string toSend5(":" + user.getFullHostname() + " 251 " + user.getNickname() + " :" + stream2.str() + " user(s) and " + getInvisibleUsers() + " invisible on 1 server(s)\r\n");
         send(fd, toSend5.c_str(), toSend5.length(), 0);
-        std::string toSend6(":" + user.getFullHostname() + " 252 " + user.getNickname() + " X :operator(s) online\r\n");
+        std::string toSend6(":" + user.getFullHostname() + " 252 " + user.getNickname() + " " + getOperators() + " :operator(s) online\r\n");
         send(fd, toSend6.c_str(), toSend6.length(), 0);
-        std::string toSend7(":" + user.getFullHostname() + " 253 " + user.getNickname() + " X :unknown connection(s)\r\n");
+        std::string toSend7(":" + user.getFullHostname() + " 253 " + user.getNickname() + " 0 :unknown connection(s)\r\n");
         send(fd, toSend7.c_str(), toSend7.length(), 0);
         std::stringstream stream;
         stream << getChannels().size();
-        std::string toSend8(":" + user.getFullHostname() + " 254 " + user.getNickname() + " " + stream.str() + " :channels formed\r\n");
+        std::string toSend8(":" + user.getFullHostname() + " 254 " + user.getNickname() + " " + stream.str() + " :channel(s) formed\r\n");
         send(fd, toSend8.c_str(), toSend8.length(), 0);
         std::string toSend9(":" + user.getFullHostname() + " 255 " + user.getNickname() + " :I have X clients and X servers\r\n");
         send(fd, toSend9.c_str(), toSend9.length(), 0);
@@ -167,13 +169,11 @@ void Server::checkInfo(User & user, int fd)
             std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend9 << RESET;
         }
         _command_functions.at("motd")(getUsers().at(fd).getBuffer(), fd, *this);
-        //send 001, 002, 003, 004 ... 255 et motd
     }
 }
 
 void Server::handleRequests(char *request, int fd){
     try{
-        std::cout << request << std::endl;
         getUsers().at(fd).concatBuffer(request);
         while (getUsers().at(fd).getBuffer().find("\r\n") != std::string::npos){
             if (DEBUG)
@@ -199,3 +199,27 @@ void Server::handleRequests(char *request, int fd){
     }
 }
 
+
+std::string Server::getInvisibleUsers(){
+    size_t i = 0;
+    for (std::map<int, User>::iterator it = _Users.begin(); it != _Users.end(); it++){
+        if (it->second.getUserMode().find("i") != std::string::npos){
+            i++;
+        }
+    }
+    std::stringstream stream;
+    stream << i;
+    return stream.str();
+}
+
+std::string Server::getOperators(){
+    size_t i = 0;
+    for (std::map<int, User>::iterator it = _Users.begin(); it != _Users.end(); it++){
+        if (it->second.getUserMode().find("o") != std::string::npos){
+            i++;
+        }
+    }
+    std::stringstream stream;
+    stream << i;
+    return stream.str();
+}

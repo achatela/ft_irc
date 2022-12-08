@@ -29,6 +29,6 @@ re: fclean all
 debugflags:
 	$(eval CXXFLAGS=-D DEBUG)
 
-debug: debugflags all
+debug: fclean debugflags all
 
 .PHONY: all clean fclean re

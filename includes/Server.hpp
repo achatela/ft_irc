@@ -45,6 +45,9 @@ class Server{
         std::map<int, User>& getUsers(){return _Users;}
         std::vector<pollfd>& getPfds(){return _pfds;}
         std::vector<Channel>& getChannels(){return _channels;}
+
+        std::string getInvisibleUsers();
+        std::string getOperators();
 };
 
 #endif
