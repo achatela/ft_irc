@@ -533,15 +533,23 @@ void Command::TRACE(std::string , int , Server & server){
 void Command::UNBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 void Command::UNSILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
-// void Command::UPGRADE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-
-
 void Command::USERHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
-// void Command::VERSION(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
-void Command::WALLOPS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::WALLOPS(std::string buffer, int fd,  Server & server){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string msg(buffer.substr(0, buffer.find(" ")));
+    if (server.getUsers().at(fd).getUserMode().find("o") == std::string::npos){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 481 " + server.getUsers().at(fd).getNickname() + " :Permission Denied- You're not an IRC operator\r\n");
+        return ;
+    }
+
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+        if (it->second.getUserMode().find("w") != std::string::npos)
+            reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " WALLOPS " + msg);
+    }
+};
 
 
 void Command::WHO(std::string buffer, int fd, Server & server){
@@ -646,6 +654,7 @@ Command::Command(void){
     _commandsFilled["kill"] = KILL;
     _commandsFilled["KICK"] = KICK;
     _commandsFilled["INVITE"] = INVITE;
+    _commandsFilled["wallops"] = WALLOPS;
 };
 
 Command::~Command(void){
