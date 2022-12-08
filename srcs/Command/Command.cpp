@@ -228,8 +228,14 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
             check = server.getChannels().at(j);
         if (flags[0] != '#'){
             buffer.erase(0, buffer.find(' ') + 1);
-            if (buffer.substr(0, buffer.find(' ')) == "+b")
+            if (buffer.substr(0, buffer.find(' ')) == "+b"){
+                std::string flag = buffer.substr(0, buffer.find("\r\n"));
                 check.getBanList().push_back(buffer.substr(0, buffer.find("\r\n")));
+                for (std::vector<int>::iterator it = check.getFdList().begin(); it != check.getFdList().end(); it++){
+                    reply(*it, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n");
+                }
+                return;
+            }
             size_t i = 0;
             for(; buffer[i] != '\r'; i++){
                 if (buffer[i] == ' ' && buffer[i + 1] != '+')
