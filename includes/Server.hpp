@@ -9,7 +9,7 @@ class Server{
 
     private:
         int _opt;
-        bool _status;
+        int _status;
         struct sockaddr_in _address;
         int _addrlen;
         int _server_listen;
@@ -31,7 +31,7 @@ class Server{
         Server(int ac, char **av);
         ~Server();
 
-        bool getStatus() {return _status;};
+        int getStatus() {return _status;};
 
         void handleErrors(int ac, char **av);
         void handleRequests(char *request, int j);
@@ -49,7 +49,7 @@ class Server{
         std::string getInvisibleUsers();
         std::string getOperators();
 
-        void setStatus(bool toSet){_status = toSet;}
+        void setStatus(int toSet){_status = toSet;}
 
 };
 

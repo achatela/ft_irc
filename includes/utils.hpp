@@ -21,6 +21,7 @@
 
 # define ON 0
 # define OFF 1
+# define REBOOT 2
 
 #ifndef DEBUG
     #define DEBUG 0
