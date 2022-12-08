@@ -13,6 +13,7 @@ class User{
         std::string _real_password;
         std::string _host;
         std::string _hostname;
+        std::string _domain_name;
         int _fd;
         std::string _nickname; // 9 maximum any octet except NUL, CR(\r), LF(\b), " " and "@"
         std::string _username;
@@ -50,6 +51,8 @@ class User{
         void setHost(std::string host){_host = host; return;};
         std::string getHostname(){return _hostname;};
         void setHostname(std::string hostname){_hostname = hostname; return;};
+        std::string getDomainname(){return _domain_name;};
+        void setDomainName(std::string domain_name){_domain_name = domain_name; return;};
         std::string getRealPassword(){return _real_password;};
         bool getAccess(){return _access;};
         void setAccess(bool access){_access = access; return;};

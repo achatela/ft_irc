@@ -68,16 +68,22 @@ User::User(std::string password, struct sockaddr_in address) : _access(FORBIDDEN
     _hostaddr = inet_ntoa(address.sin_addr);
     char host[NI_MAXHOST];
     char hostname[NI_MAXHOST];
-    if (getnameinfo((struct sockaddr *)&address, sizeof(address), host, NI_MAXHOST, NULL, 0, 0) != 0)
+
+    char *dn;
+    struct hostent *hp;
+
+    
+    if (getnameinfo((struct sockaddr *)&address, sizeof(address), host, NI_MAXHOST, NULL, 0, NI_NOFQDN) != 0)
         ;
 	else{
-		setHost(host);
+		setHost(gethostbyname(host)->h_name);
     }
     if (getnameinfo((struct sockaddr *)&address, sizeof(address), hostname, NI_MAXHOST, NULL, 0, NI_NUMERICSERV) != 0)
         ;
 	else{
 		setHostname(hostname);
     }
+    setDomainName(strchr(gethostbyname(hostname)->h_name, '.'));
 };
 
 void User::clearBuffer()

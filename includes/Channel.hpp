@@ -15,6 +15,7 @@ class Channel{
         std::string _channel_mode;
         std::vector <int> _fd_list;
         std::vector <std::string> _user_list;
+        std::vector <std::string> _ban_list;
         std::map <int, User > _Users;
         std::map <int, std::string> _Users_modes;
         std::string         _topic;
@@ -28,6 +29,7 @@ class Channel{
 
         std::vector <int> &getFdList(){return _fd_list;};
         std::vector <std::string> &getUserList(){return _user_list;};
+        std::vector <std::string> &getBanList(){return _ban_list;};
         std::map <int, std::string>& getUserMode(){return _Users_modes;}
         std::string getChannelName(){return _channel_name;};
         void setChannelName(std::string name){_channel_name = name;};
