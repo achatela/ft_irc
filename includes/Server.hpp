@@ -48,6 +48,9 @@ class Server{
 
         std::string getInvisibleUsers();
         std::string getOperators();
+
+        void setStatus(bool toSet){_status = toSet;}
+
 };
 
 #endif

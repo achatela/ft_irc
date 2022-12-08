@@ -5,6 +5,5 @@ int main (int ac, char **av){
 
     while (server.getStatus() == ON)
       server.sondage();
-    //close(sockfd);
     return 0;
 }

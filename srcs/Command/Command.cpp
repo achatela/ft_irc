@@ -7,8 +7,7 @@ void Command::reply(int fd, std::string toSend){
         std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
 }
 
-void Command::ACCEPT(std::string, int fd, Server & server){
-    (void)server;
+void Command::ACCEPT(std::string, int fd, Server &){
     reply(fd, "Unknown command: ACCEPT\r\n");
 };
 
@@ -30,16 +29,14 @@ void Command::AWAY(std::string buffer, int fd, Server & server){
 
 
 void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::CYCLE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
-
-void Command::DIE(std::string, int, Server & server){
-    (void)server;
-    exit(1);
+void Command::DIE(std::string, int fd, Server & server){
+    if (server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 481 " + server.getUsers().at(fd).getNickname() + " :Permission Denied- You're not an IRC operator\r\n");
+        return;
+    }
+    server.setStatus(OFF);
 };
-
-
-void Command::DISCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 void Command::INFO(std::string, int fd, Server & server){
     std::string debug_str;
@@ -55,7 +52,11 @@ void Command::INFO(std::string, int fd, Server & server){
 };
 
 
-void Command::INVITE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::INVITE(std::string, int fd,  Server &){
+    reply(fd, "Unknown command: INVITE\r\n");
+}
+
+
 void Command::ISO(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
@@ -307,7 +308,7 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
 };
 
 
-void Command::MOTD(std::string, int fd, Server & server){ // changer (ouvrir un fichier conf/ircd.motd)
+void Command::MOTD(std::string, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 375 " + server.getUsers().at(fd).getNickname() + " :- ClownRC Message of the day\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :-           achatela                                hcarpent\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄           ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄\r\n");
@@ -358,12 +359,21 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
             it++;
         }
         if (it == server.getChannels().end()){
-            std::cout << "possible ? " << std::endl;
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
+            return ;
         }
-
+        std::vector<std::string>::iterator it2 = it->getUserList().begin();
+        for (; it2 != it->getUserList().end(); it2++){
+            if (*it2 == server.getUsers().at(fd).getNickname())
+                break;
+        }
+        if (it2 == it->getUserList().end()){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 404 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :Cannot send to channel\r\n");
+            return;
+        }
         for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
             if (*ite != fd)
-                reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n"); // envoyer à tous les fd
+                reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
         }
     }
     else {//if (buffer[0] != 1){
@@ -426,8 +436,11 @@ void Command::PART(std::string buffer, int fd,  Server & server){
             break;
     }
     if (it == server.getChannels().end()){
-        std::cout << "CHANNEL CAN'T BE DELETED" << std::endl;
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :No such nick/channel\r\n");
         return ;
+    }
+    for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
+        reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
     }
     std::vector <int> tmp_fd = it->getFdList();
     std::vector <std::string> tmp_user = it->getUserList();
@@ -437,10 +450,6 @@ void Command::PART(std::string buffer, int fd,  Server & server){
             it->getUserList().erase(it->getUserList().begin() + i);
             break;
         }
-    }
-    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
-    for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
-        reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
     }
     if (it->getFdList().empty())
         server.getChannels().erase(it);
@@ -517,9 +526,15 @@ void Command::TRACE(std::string , int , Server & server){
 
 void Command::UNBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 void Command::UNSILENCE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::UPGRADE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+
+// void Command::UPGRADE(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+
+
 void Command::USERHOST(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-void Command::VERSION(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+
+// void Command::VERSION(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+
+
 void Command::WALLOPS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 
@@ -570,8 +585,14 @@ void Command::NICK(std::string buffer, int fd, Server & server){
             return ;
         }
     }
-    server.getUsers().at(fd).setNickname(buffer);
-    reply(fd, ": NICK " + buffer + "\r\n");
+    if (server.getUsers().at(fd).getNickname().empty()){
+        server.getUsers().at(fd).setNickname(buffer);
+        reply(fd, ": NICK " + buffer + "\r\n");
+    }
+    else{
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " NICK :" + buffer + "\r\n");
+        server.getUsers().at(fd).setNickname(buffer);
+    }
     return;
 }
 
@@ -618,6 +639,7 @@ Command::Command(void){
     _commandsFilled["OPER"] = OPER;
     _commandsFilled["kill"] = KILL;
     _commandsFilled["KICK"] = KICK;
+    _commandsFilled["INVITE"] = INVITE;
 };
 
 Command::~Command(void){

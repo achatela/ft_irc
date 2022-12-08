@@ -155,7 +155,9 @@ void Server::checkInfo(User & user, int fd)
         stream << getChannels().size();
         std::string toSend8(":" + user.getFullHostname() + " 254 " + user.getNickname() + " " + stream.str() + " :channel(s) formed\r\n");
         send(fd, toSend8.c_str(), toSend8.length(), 0);
-        std::string toSend9(":" + user.getFullHostname() + " 255 " + user.getNickname() + " :I have X clients and X servers\r\n");
+        stream2.str("");
+        stream2 << _Users.size();
+        std::string toSend9(":" + user.getFullHostname() + " 255 " + user.getNickname() + " :I have " + stream2.str() + " clients and 0 server(s)\r\n");
         send(fd, toSend9.c_str(), toSend9.length(), 0);
         if (DEBUG){
             std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend1 << RESET;
@@ -188,8 +190,6 @@ void Server::handleRequests(char *request, int fd){
                     checkInfo(getUsers().at(fd), fd);
             }
             catch (std::exception &e){
-                // std::cout << e.what() << std::endl;
-                // std::cout << "Command doesn't exist" << std::endl;
             }
             getUsers().at(fd).clearBuffer();
         }
