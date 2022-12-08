@@ -19,16 +19,25 @@ void Command::ADMIN(std::string, int fd, Server & server){
 };
 
 void Command::AWAY(std::string buffer, int fd, Server & server){
+    bool empty = false;
+    if (buffer.size() == 6)
+        empty = true;
     buffer.erase(0, buffer.find(' ') + 2);
     std::string away_msg(buffer.substr(0, buffer.find("\r\n")));
 
-    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 306 " + server.getUsers().at(fd).getNickname() + " :You have been marked as begin away\r\n");
-    server.getUsers().at(fd).setIsAway(true);
-    server.getUsers().at(fd).setAwayMsg(away_msg);
+    if (!empty){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 306 " + server.getUsers().at(fd).getNickname() + " :You have been marked as begin away\r\n");
+        server.getUsers().at(fd).setIsAway(true);
+        server.getUsers().at(fd).setAwayMsg(away_msg);
+        return ;
+    }
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 305 " + server.getUsers().at(fd).getNickname() + " :You are no longer marked as being away\r\n");
+    server.getUsers().at(fd).setIsAway(false);
+    server.getUsers().at(fd).getAwayMsg().clear();
 };
 
 
-void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+// void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
 
 void Command::DIE(std::string, int fd, Server & server){
     if (server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
@@ -156,9 +165,6 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
 };
 
 
-// void Command::KICKBAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-
-
 void Command::KILL(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string nickname =  buffer.substr(0, buffer.find(' '));
@@ -188,7 +194,9 @@ void Command::KILL(std::string buffer, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
 };
 
-void Command::LINKS(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::LINKS(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: LINKS\r\n");
+};
 
 
 void Command::LIST(std::string buffer, int fd,  Server & server){
@@ -219,7 +227,9 @@ void Command::LIST(std::string buffer, int fd,  Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 323 " + server.getUsers().at(fd).getUsername() + " :End of /LIST\r\n");
 };
 
-void Command::MAP(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::MAP(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: MAP\r\n");
+};
 
 void Command::MODE(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -395,10 +405,10 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
     else {//if (buffer[0] != 1){
         for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
             if (it->second.getNickname() == tmp_user){
-                if (server.getUsers().at(it->first).getIsAway() == true){
-                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 301 " + server.getUsers().at(fd).getNickname() + " :" + server.getUsers().at(it->first).getAwayMsg() + "\r\n");
-                }
                 reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
+                if (server.getUsers().at(it->first).getIsAway() == true){
+                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 301 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :" + server.getUsers().at(it->first).getAwayMsg() + "\r\n");
+                }
                 break ;
             }
         }
@@ -713,6 +723,8 @@ Command::Command(void){
     _commandsFilled["silence"] = SILENCE;
     _commandsFilled["stats"] = STATS;
     _commandsFilled["ison"] = ISO;
+    _commandsFilled["map"] = MAP;
+    _commandsFilled["links"] = LINKS;
 };
 
 Command::~Command(void){
