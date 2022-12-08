@@ -28,11 +28,11 @@ class Channel{
 
         std::vector <int> &getFdList(){return _fd_list;};
         std::vector <std::string> &getUserList(){return _user_list;};
+        std::map <int, std::string>& getUserMode(){return _Users_modes;}
         std::string getChannelName(){return _channel_name;};
         void setChannelName(std::string name){_channel_name = name;};
         std::string getChannelMode(){return _channel_mode;};
         void setChannelMode(std::string name){_channel_mode = name;};
-        std::map <int, std::string>& getUserMode(){return _Users_modes;}
 
         bool isInUserList(std::string name){
             size_t i = 0;

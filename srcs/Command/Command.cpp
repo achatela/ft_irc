@@ -76,7 +76,10 @@ void Command::JOIN(std::string buffer, int fd,  Server & server){
         server.getChannels().push_back(Channel());
         server.getChannels().back().setChannelName(chan_name);
         it = server.getChannels().end() - 1;
+        it->getUserMode()[fd] += "o";
     }
+    else
+        it->getUserMode()[fd] += "w";
     it->pushFdList(fd); // protéger si l'user n'a pas les droits
     it->getUserList().push_back(server.getUsers().at(fd).getNickname());
     std::string msg = "@";
@@ -119,7 +122,7 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
         return;
     }
 
-    if (server.getUsers().at(fd).getUserMode().find("o") == std::string::npos /* && it->getUserMode().at(fd).find("o") == std::string::npos*/){ // check if he's chan op too
+    if (server.getUsers().at(fd).getUserMode().find("o") == std::string::npos && it->getUserMode().at(fd).find("o") == std::string::npos){ // check if he's chan op too
         reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You're not channel operator\r\n");
         return ;
     }
