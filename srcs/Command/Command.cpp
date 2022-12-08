@@ -37,8 +37,6 @@ void Command::AWAY(std::string buffer, int fd, Server & server){
 };
 
 
-// void Command::BAN(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
-
 void Command::DIE(std::string, int fd, Server & server){
     if (server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
         reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 481 " + server.getUsers().at(fd).getNickname() + " :Permission Denied- You're not an IRC operator\r\n");
@@ -490,13 +488,17 @@ void Command::QUIT(std::string buffer, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
 };
 
-void Command::REHASH(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;}; // ??
+void Command::REHASH(std::string, int fd,  Server &){
+    reply(fd, "Unsupported command: REHASH\r\n");
+};
 
 void Command::RESTART(std::string , int , Server & server){
     server.setStatus(REBOOT);
 };
 
-void Command::SCONNECT(std::string buffer, int fd,  Server & server){(void)buffer; (void)fd; (void)server;    return;};
+void Command::SCONNECT(std::string , int fd,  Server & ){
+    reply(fd, "Unsupported command: SCONNECT\r\n");
+};
 
 
 void Command::SERVLIST(std::string, int fd,  Server &){
@@ -717,6 +719,7 @@ Command::Command(void){
     _commandsFilled["wallops"] = WALLOPS;
     _commandsFilled["userhost"] = USERHOST;
     _commandsFilled["SETHOST"] = SETHOST;
+    _commandsFilled["REHASH"] = REHASH;
     _commandsFilled["SERVLIST"] = SERVLIST;
     _commandsFilled["squit"] = SQUIT;
     _commandsFilled["squery"] = SQUERY;
@@ -725,6 +728,7 @@ Command::Command(void){
     _commandsFilled["ison"] = ISO;
     _commandsFilled["map"] = MAP;
     _commandsFilled["links"] = LINKS;
+    _commandsFilled["CONNECT"] = SCONNECT;
 };
 
 Command::~Command(void){
