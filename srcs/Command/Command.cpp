@@ -85,7 +85,7 @@ void Command::JOIN(std::string buffer, int fd,  Server & server){
         if (it->getChannelName() == chan_name){
             for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it->getBanList().end(); it2++){
                 if ("*!*" + server.getUsers()[fd].getUsername() + "@*" + server.getUsers()[fd].getDomainName() + "\r\n" == *it2){
-                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 474 " +  server.getUsers().at(fd).getNickname() + " :You are banned from this channel\r\n");
+                    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 474 " +  server.getUsers().at(fd).getNickname() + " " + chan_name + " :You are banned from this channel\r\n");
                     return;
                 }
             }
@@ -105,11 +105,11 @@ void Command::JOIN(std::string buffer, int fd,  Server & server){
         it->getUserMode()[fd] += "w";
     for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it->getBanList().end(); it2++){
         if ("*!*" + server.getUsers()[fd].getUsername() + "@*" + server.getUsers()[fd].getDomainName() + "\r\n" == *it2){
-            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 474 " +  server.getUsers().at(fd).getNickname() + " :You are banned from this channel\r\n");
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 474 " +  server.getUsers().at(fd).getNickname() + " " + chan_name + " :You are banned from this channel\r\n");
             return;
         }
     }
-    it->pushFdList(fd); // protéger si l'user n'a pas les droits
+    it->pushFdList(fd);
     it->getUserList().push_back(server.getUsers().at(fd).getNickname());
     std::string msg = "@";
     for (std::vector<std::string>::iterator ite = it->getUserList().begin() ; ite != it->getUserList().end(); ite++){
@@ -253,14 +253,9 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
     if (tmp[0] == '#'){
         std::string flags(buffer.substr(0, buffer.find(" ")));
         size_t space_num = 0;
-        // Channel check;
-        // int j = getChannel(tmp, server.getChannels());
-        // if (j == -1){
-        //     return ;
-        // }
-        // else
-        //     check = server.getChannels().at(j);
+
         std::vector<Channel>::iterator it = server.getChannels().begin();
+
         for (; it != server.getChannels().end(); it++){
             if (it->getChannelName() == tmp)
                 break;
@@ -274,16 +269,22 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
         }
         if (flags[0] != '#'){
             if (buffer.substr(0, buffer.find(' ')) == "+b"){
+                std::string toFind = server.getUsers().at(fd).getNickname();
+                std::vector<std::string>::iterator tmp_it = it->getBanList().begin();
+
+                for(; tmp_it != it->getBanList().end(); tmp_it++){
+                    if (toFind == *tmp_it){
+                        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
+                        return ;
+                    }
+                }
+
                 std::string flagban = buffer.substr(0, buffer.find("\r\n"));
                 it->getBanList().push_back(buffer.substr(3, buffer.find("\r\n")));
                 std::cout << it->getChannelName() << std::endl;
                 for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it->getFdList().end(); it3++){
                     reply(*it3, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flagban + "\r\n");
                 }
-                for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it->getBanList().end(); it2++){
-                    std::cout << *it2 << std::endl;
-                }
-                std::cout << it->getChannelName() << std::endl;
                 return;
             }
             buffer.erase(0, buffer.find(' ') + 1);
@@ -429,7 +430,7 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
         }
         for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it->getBanList().end(); it2++){
             if ("*!*" + server.getUsers()[fd].getUsername() + "@*" + server.getUsers()[fd].getDomainName() + "\r\n" == *it2){
-                reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 474 " +  server.getUsers().at(fd).getNickname() + " :You are banned from this channel\r\n");
+                reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 404 " +  server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You are banned from this channel\r\n");
                 return;
             }
         }
@@ -447,7 +448,7 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
                 reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
         }
     }
-    else {//if (buffer[0] != 1){
+    else {
         for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
             if (it->second.getNickname() == tmp_user){
                 reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
@@ -499,23 +500,33 @@ void Command::PART(std::string buffer, int fd,  Server & server){
             break;
     }
     if (it == server.getChannels().end()){
-        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :No such nick/channel\r\n");
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 403 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :No such channel\r\n");
+        return ;
+    }
+    std::vector <std::string>::iterator tmp_it2 = it->getUserList().begin();
+    std::vector<int>::iterator tmp_it = it->getFdList().begin();
+
+    for (; tmp_it < it->getFdList().end(); tmp_it++){
+        if (*tmp_it == fd){
+            it->getFdList().erase(tmp_it);
+            it->getUserList().erase(tmp_it2);
+            reply(*tmp_it, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
+            if (it->getFdList().empty()){
+                server.getChannels().erase(it);
+                return ;
+            }
+            return ;
+        }
+        tmp_it2++;
+    }
+    if (tmp_it == it->getFdList().end()){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 403 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :No such channel\r\n");
         return ;
     }
     for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
         reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
     }
-    std::vector <int> tmp_fd = it->getFdList();
-    std::vector <std::string> tmp_user = it->getUserList();
-    for (size_t i = 0; i < tmp_fd.size(); i++){
-        if (tmp_fd[i] == fd){
-            it->getFdList().erase(it->getFdList().begin() + i);
-            it->getUserList().erase(it->getUserList().begin() + i);
-            break;
-        }
-    }
-    if (it->getFdList().empty())
-        server.getChannels().erase(it);
+
 };
 
 
