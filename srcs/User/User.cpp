@@ -69,10 +69,6 @@ User::User(std::string password, struct sockaddr_in address) : _access(FORBIDDEN
     char host[NI_MAXHOST];
     char hostname[NI_MAXHOST];
 
-    char *dn;
-    struct hostent *hp;
-
-    
     if (getnameinfo((struct sockaddr *)&address, sizeof(address), host, NI_MAXHOST, NULL, 0, NI_NOFQDN) != 0)
         ;
 	else{

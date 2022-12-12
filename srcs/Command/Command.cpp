@@ -269,19 +269,36 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
         }
         if (flags[0] != '#'){
             if (buffer.substr(0, buffer.find(' ')) == "+b"){
-                std::string toFind = server.getUsers().at(fd).getNickname();
-                std::vector<std::string>::iterator tmp_it = it->getBanList().begin();
+                std::string toFind = server.getUsers().at(fd).getUserMode();
+                std::map<int, std::string>::iterator tmp_it = it->getUserMode().begin();
+                std::map<int, User>::iterator tmp_it2;
 
-                for(; tmp_it != it->getBanList().end(); tmp_it++){
-                    if (toFind == *tmp_it){
-                        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
-                        return ;
+                // std::vector<std::string>::iterator it_user = it->getUserList().begin();
+                // int index = 0;
+                // for (; it_user != it->getUserList().end(); it_user++){
+                //     if (*it_user == tmp){
+                //         break;
+                //     }
+                //     index++;
+                // }
+                // if (it_user == it->getUserList().end())
+                //     return ;
+                std::string flagban = buffer.substr(0, buffer.find("\r\n"));
+                if (/*it->getUserMode()[it->getFdList()[index]].find("o") == std::string::npos || */ flagban[3] != '*'){
+                    return ;
+                }
+                else if (toFind.find("o") == std::string::npos){
+                    for(; tmp_it != it->getUserMode().end(); tmp_it++){
+                        if (fd == tmp_it->first){
+                            if (tmp_it->second.find("o") == std::string::npos){
+                                reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
+                                return ;
+                            }
+                        }
                     }
                 }
-
-                std::string flagban = buffer.substr(0, buffer.find("\r\n"));
                 it->getBanList().push_back(buffer.substr(3, buffer.find("\r\n")));
-                std::cout << it->getChannelName() << std::endl;
+
                 for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it->getFdList().end(); it3++){
                     reply(*it3, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flagban + "\r\n");
                 }

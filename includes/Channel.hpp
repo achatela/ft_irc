@@ -16,7 +16,6 @@ class Channel{
         std::vector <int> _fd_list;
         std::vector <std::string> _user_list;
         std::vector <std::string> _ban_list;
-        std::map <int, User > _Users;
         std::map <int, std::string> _Users_modes;
         std::string         _topic;
 
