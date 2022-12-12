@@ -91,12 +91,27 @@ void Server::sondage(){
             {
                 if (recv(it->fd, server_reply, 512, MSG_DONTWAIT) == 0)
                 {
+
                     int i = it - getPfds().begin();
                     std::map<int, User>::iterator it2 = getUsers().begin();
                     while (i - 1 > 0){
                         it2++;
                         i--;
                     }
+fix:
+                    std::vector<Channel>::iterator it3 = this->getChannels().begin();
+                    size_t k = 0;
+                    for(; it3 != this->getChannels().end(); it3++){
+                        k = 0;
+                        while (k < it3->getFdList().size()){
+                            if (it3->getFdList()[k] == it->fd){
+                                _command_functions["PART"]("PART " + it3->getChannelName() + "\r\n", it->fd, *this);
+                                goto fix;
+                            }
+                            k++;
+                        }
+                    }
+
                     close(it->fd);
                     it = getPfds().erase(it);
                     getUsers().erase(it2);

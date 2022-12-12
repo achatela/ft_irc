@@ -103,6 +103,8 @@ void Command::JOIN(std::string buffer, int fd,  Server & server){
     }
     else
         it->getUserMode()[fd] += "w";
+    if (server.getUsers().at(fd).getUserMode().find("o") != std::string::npos)
+        it->getUserMode()[fd] += "o";
     for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it->getBanList().end(); it2++){
         if ("*!*" + server.getUsers()[fd].getUsername() + "@*" + server.getUsers()[fd].getDomainName() + "\r\n" == *it2){
             reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 474 " +  server.getUsers().at(fd).getNickname() + " " + chan_name + " :You are banned from this channel\r\n");
@@ -111,12 +113,16 @@ void Command::JOIN(std::string buffer, int fd,  Server & server){
     }
     it->pushFdList(fd);
     it->getUserList().push_back(server.getUsers().at(fd).getNickname());
-    std::string msg = "@";
+    std::string msg = "";
+    std::vector<int>::iterator it2 = it->getFdList().begin();
     for (std::vector<std::string>::iterator ite = it->getUserList().begin() ; ite != it->getUserList().end(); ite++){
+        if (it->getUserMode().at(*it2).find("o") != std::string::npos)
+            msg += "@";
         msg += *ite;
         if (it->getUserList().end() - ite != 1){
             msg += " ";
         }
+        it2++;
     }
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 353 " + server.getUsers().at(fd).getNickname() + " = " + chan_name + " :" + msg + "\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 366 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :End of /NAMES list\r\n");
@@ -273,18 +279,8 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
                 std::map<int, std::string>::iterator tmp_it = it->getUserMode().begin();
                 std::map<int, User>::iterator tmp_it2;
 
-                // std::vector<std::string>::iterator it_user = it->getUserList().begin();
-                // int index = 0;
-                // for (; it_user != it->getUserList().end(); it_user++){
-                //     if (*it_user == tmp){
-                //         break;
-                //     }
-                //     index++;
-                // }
-                // if (it_user == it->getUserList().end())
-                //     return ;
                 std::string flagban = buffer.substr(0, buffer.find("\r\n"));
-                if (/*it->getUserMode()[it->getFdList()[index]].find("o") == std::string::npos || */ flagban[3] != '*'){
+                if (flagban[3] != '*'){
                     return ;
                 }
                 else if (toFind.find("o") == std::string::npos){
@@ -304,6 +300,46 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
                 }
                 return;
             }
+            
+            else if (buffer.substr(0, buffer.find(' ')) == "+o"){
+                std::cout << " in else if" << std::endl;
+                std::string toFind = server.getUsers().at(fd).getUserMode();
+                std::map<int, std::string>::iterator tmp_it = it->getUserMode().begin();
+                std::map<int, User>::iterator tmp_it2;
+
+                std::string flag_op = buffer.substr(0, buffer.find("\r\n"));
+
+                if (toFind.find("o") == std::string::npos){
+                    for(; tmp_it != it->getUserMode().end(); tmp_it++){
+                        if (fd == tmp_it->first){
+                            if (tmp_it->second.find("o") == std::string::npos){
+                                reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
+                                return ;
+                            }
+                        }
+                    }
+                }
+                std::cout << " in else if" << std::endl;
+                std::string toPromote = buffer.substr(3, buffer.find("\r\n"));
+                std::vector<std::string>::iterator it8 = it->getUserList().begin();
+                int h = 0;
+
+                for (; it8 != it->getUserList().end(); it8++){
+                    if (*it8 == toPromote)
+                        break;
+                    h++;
+                }
+                // it->getUserMode().at(it->getFdList()[h]) += "o";
+
+                std::cout << it->getUserMode().at(it->getFdList()[h]) << std::endl;
+                std::cout << "ee" << std::endl;
+                for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it->getFdList().end(); it3++){
+                    reply(*it3, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flag_op + "\r\n");
+                }
+                return;
+            }
+
+
             buffer.erase(0, buffer.find(' ') + 1);
             size_t i = 0;
             for(; buffer[i] != '\r'; i++){
@@ -558,6 +594,21 @@ void Command::PING(std::string buffer, int fd, Server & server ){
 void Command::QUIT(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string leave_msg(buffer.substr(0, buffer.find("\r\n")));
+
+no_segfault:
+
+    std::vector<Channel>::iterator it = server.getChannels().begin();
+    size_t i = 0;
+    for(; it != server.getChannels().end(); it++){
+        i = 0;
+        while (i < it->getFdList().size()){
+            if (it->getFdList()[i] == fd){
+                PART("PART " + it->getChannelName() + "\r\n", fd, server);
+                goto no_segfault;
+            }
+            i++;
+        }
+    }
 
     server.getUsers().at(fd).setIsConnected(false);
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " QUIT :QUIT " + leave_msg + "\r\n");
