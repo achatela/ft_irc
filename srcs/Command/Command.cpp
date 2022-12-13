@@ -13,7 +13,7 @@ void Command::ACCEPT(std::string, int fd, Server &){
 
 void Command::ADMIN(std::string, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 256 " + server.getUsers().at(fd).getNickname() + " ClownRC :Administrative info\r\n");
-    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 257 " + server.getUsers().at(fd).getNickname() + " :You're on ClownRC, our server is hosted in France and is accesible with the following url FAUT QUON LA SET\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 257 " + server.getUsers().at(fd).getNickname() + " :You're on ClownRC, our server is hosted in France and is accesible with the following url " + server.getHostname() + "\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 258 " + server.getUsers().at(fd).getNickname() + " :If you need any information relating our project fell free to contact us\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 259 " + server.getUsers().at(fd).getNickname() + " :<achatela@student.42.fr>, <hcarpent@student.42.fr>\r\n");
 };
@@ -526,6 +526,10 @@ void Command::NOTICE(std::string buffer, int fd, Server & server){
 };
 
 void Command::OPER(std::string buffer, int fd,  Server & server){
+    if (buffer.size() <= 7){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 461 " + server.getUsers().at(fd).getNickname() + " OPER :Not enough parameters\r\n");
+        return ;
+    }
     buffer.erase(0, buffer.find(' ') + 1);
     buffer.erase(0, buffer.find(' ') + 1);
     if (buffer == "admin\r\n"){

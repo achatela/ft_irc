@@ -49,6 +49,7 @@ class Server{
         std::string getInvisibleUsers();
         std::string getOperators();
 
+        char * getHostname(){return _hostname;};
         void setStatus(int toSet){_status = toSet;}
 
 };
