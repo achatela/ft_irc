@@ -782,6 +782,14 @@ void Command::PASS(std::string buffer, int fd, Server & server){
 
 
 void Command::NICK(std::string buffer, int fd, Server & server){
+    // No ERR_NICKCOLLISION because we only have 1 server
+    // No ERR_UNAVAILRESOURCE because we don't handle nick delay mechanism
+    // No ERR_RESTRICTED because we don't handle +r usermode
+
+    if (buffer.size() <= 7){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 431 " + server.getUsers().at(fd).getNickname() + " :No nickname given\r\n");
+        return ;
+    }
     buffer.erase(0, buffer.find(' ') + 1);
     buffer = buffer.substr(0, buffer.find("\r\n"));
     if (buffer.find('\b') != std::string::npos || buffer.find('\r') != std::string::npos
