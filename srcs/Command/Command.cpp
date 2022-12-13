@@ -302,7 +302,6 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
             }
             
             else if (buffer.substr(0, buffer.find(' ')) == "+o"){
-                std::cout << " in else if" << std::endl;
                 std::string toFind = server.getUsers().at(fd).getUserMode();
                 std::map<int, std::string>::iterator tmp_it = it->getUserMode().begin();
                 std::map<int, User>::iterator tmp_it2;
@@ -319,23 +318,21 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
                         }
                     }
                 }
-                std::cout << " in else if" << std::endl;
                 std::string toPromote = buffer.substr(3, buffer.find("\r\n"));
                 std::vector<std::string>::iterator it8 = it->getUserList().begin();
                 int h = 0;
-
                 for (; it8 != it->getUserList().end(); it8++){
-                    if (*it8 == toPromote)
-                        break;
+                    if (*it8 + "\r\n" == toPromote){
+                        it->getUserMode().at(it->getFdList()[h]) += "o";
+                        for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it->getFdList().end(); it3++){
+                            reply(*it3, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flag_op + "\r\n");
+                        }
+                        return ;
+                    }
                     h++;
                 }
-                // it->getUserMode().at(it->getFdList()[h]) += "o";
-
-                std::cout << it->getUserMode().at(it->getFdList()[h]) << std::endl;
-                std::cout << "ee" << std::endl;
-                for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it->getFdList().end(); it3++){
-                    reply(*it3, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flag_op + "\r\n");
-                }
+                toPromote.erase(toPromote.end() - 2, toPromote.end());
+                reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 441 " + server.getUsers().at(fd).getNickname() + " " + toPromote + " :User not on the channel\r\n");
                 return;
             }
 
@@ -561,12 +558,17 @@ void Command::PART(std::string buffer, int fd,  Server & server){
 
     for (; tmp_it < it->getFdList().end(); tmp_it++){
         if (*tmp_it == fd){
+            reply(*tmp_it, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
             it->getFdList().erase(tmp_it);
             it->getUserList().erase(tmp_it2);
-            reply(*tmp_it, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
             if (it->getFdList().empty()){
                 server.getChannels().erase(it);
                 return ;
+            }
+            else{
+                for(std::vector<int>::iterator it2 = it->getFdList().begin(); it2 != it->getFdList().end(); it2++){
+                    reply(*it2, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
+                }
             }
             return ;
         }
@@ -576,10 +578,9 @@ void Command::PART(std::string buffer, int fd,  Server & server){
         reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 403 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :No such channel\r\n");
         return ;
     }
-    for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
-        reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
-    }
-
+    // for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
+    //     reply(*ite, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
+    // }
 };
 
 
@@ -766,6 +767,14 @@ void Command::WHOWAS(std::string buffer, int fd,  Server & server){
 };
 
 void Command::PASS(std::string buffer, int fd, Server & server){
+    if (buffer.size() <= 7){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 462 " + server.getUsers().at(fd).getNickname() + " PASS :Not enough parameters\r\n");
+        return ;
+    }
+    if (!server.getUsers().at(fd).getPassword().empty()){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 462 " + server.getUsers().at(fd).getNickname() + " :Unauthorized command (already registered)\r\n");
+        return ;
+    }
     buffer.erase(0, buffer.find(' ') + 1);
     server.getUsers().at(fd).setPassword(buffer.substr(0, buffer.find("\r\n")));
     return;
