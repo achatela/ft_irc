@@ -78,6 +78,12 @@ void Command::ISO(std::string buffer, int fd,  Server & server){
 
 
 void Command::JOIN(std::string buffer, int fd,  Server & server){
+    // No ERR_BADCHANNELKEY because we don't handle +k channel mode
+    // No ERR_CHANNELISFULL because we don't handle +l channel mode
+    if (buffer.size() <= 7){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 461 " + server.getUsers().at(fd).getNickname() + " KILL :Not enough parameters\r\n");
+        return ;
+    }
     buffer.erase(0, buffer.find(' ') + 1);
     std::string chan_name(buffer.substr(0, buffer.find("\r\n")));
     std::vector<Channel>::iterator it = server.getChannels().begin();
@@ -545,6 +551,10 @@ void Command::OPER(std::string buffer, int fd,  Server & server){
 
 
 void Command::PART(std::string buffer, int fd,  Server & server){
+    if (buffer.size() <= 7){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 462 " + server.getUsers().at(fd).getNickname() + " PART :Not enough parameters\r\n");
+        return ;
+    }
     buffer.erase(0, buffer.find(' ') + 1);
     std::string serv_name(buffer.substr(0, buffer.find("\r\n")));
 
@@ -579,7 +589,7 @@ void Command::PART(std::string buffer, int fd,  Server & server){
         tmp_it2++;
     }
     if (tmp_it == it->getFdList().end()){
-        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 403 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :No such channel\r\n");
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :You're not on that channel\r\n");
         return ;
     }
     // for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
@@ -653,6 +663,7 @@ void Command::SQUERY(std::string, int fd,  Server &){
 
 
 void Command::SQUIT(std::string, int fd,  Server &){
+    // Not handled because we don't have server links
     reply(fd, "Unsupported command: SQUIT\r\n");
 };
 
