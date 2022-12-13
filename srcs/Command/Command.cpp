@@ -59,7 +59,40 @@ void Command::INFO(std::string, int fd, Server & server){
 };
 
 
-void Command::INVITE(std::string, int fd,  Server & server){
+void Command::INVITE(std::string buffer, int fd,  Server & server){
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string nickname = buffer.substr(0, buffer.find(" "));
+    buffer.erase(0, buffer.find(' ') + 1);
+    std::string chan_name(buffer);
+    chan_name.erase(chan_name.end() - 2, chan_name.end());
+    std::cout << nickname << " " << chan_name << std::endl;
+    std::map<int, User>::iterator it = server.getUsers().begin();
+    for (; it != server.getUsers().end(); it++){
+        if (nickname == it->second.getNickname()){
+            break;
+        }
+    }
+    if (it == server.getUsers().end()){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
+        return ;
+    }
+
+    std::vector<Channel>::iterator it_chan = server.getChannels().begin();
+    for (; it_chan != server.getChannels().end(); it_chan++){
+        if (it_chan->getChannelName() == chan_name)
+            break;
+    }
+    if (it_chan == server.getChannels().end()){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
+        return ;
+    }
+
+    std::vector<std::string>::iterator it_userIn = it_chan->getUserList().begin();
+    for (; it_userIn != it_chan->getUserList().end(); it_userIn++){
+        ;
+    }
+
+
     reply(4, ":" + server.getUsers().at(fd).getFullHostname() + " INVITE achatel #e\r\n");
     reply(5, ":" + server.getUsers().at(fd).getFullHostname() + " 341 achatel_ #e achatel\r\n");
 }
