@@ -21,7 +21,7 @@ class Channel{
 
     public:
 
-        Channel() : _channel_mode("n"), _ban_list(10, "ee"){;};
+        Channel() : _channel_mode(""), _ban_list(10, "ee"){;};
         ~Channel(){;};
 
         void pushFdList(int fd){_fd_list.push_back(fd);};
@@ -32,7 +32,7 @@ class Channel{
         std::map <int, std::string>& getUserMode(){return _Users_modes;}
         std::string getChannelName(){return _channel_name;};
         void setChannelName(std::string name){_channel_name = name;};
-        std::string getChannelMode(){return _channel_mode;};
+        std::string &getChannelMode(){return _channel_mode;};
         void setChannelMode(std::string name){_channel_mode = name;};
 
         bool isInUserList(std::string name){
