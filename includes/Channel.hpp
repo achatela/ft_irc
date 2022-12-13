@@ -18,6 +18,7 @@ class Channel{
         std::vector <std::string> _ban_list;
         std::map <int, std::string> _Users_modes;
         std::string         _topic;
+        std::list<std::string>      _pending_users;
 
     public:
 
@@ -26,6 +27,7 @@ class Channel{
 
         void pushFdList(int fd){_fd_list.push_back(fd);};
 
+        std::list<std::string> &getPending(){return _pending_users;}
         std::vector <int> &getFdList(){return _fd_list;};
         std::vector <std::string> &getUserList(){return _user_list;};
         std::vector <std::string> &getBanList(){return _ban_list;};

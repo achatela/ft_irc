@@ -59,8 +59,9 @@ void Command::INFO(std::string, int fd, Server & server){
 };
 
 
-void Command::INVITE(std::string, int fd,  Server &){
-    reply(fd, "Unsupported command: INVITE\r\n");
+void Command::INVITE(std::string, int fd,  Server & server){
+    reply(4, ":" + server.getUsers().at(fd).getFullHostname() + " INVITE achatel #e\r\n");
+    reply(5, ":" + server.getUsers().at(fd).getFullHostname() + " 341 achatel_ #e achatel\r\n");
 }
 
 
