@@ -676,7 +676,7 @@ void Command::OPER(std::string buffer, int fd,  Server & server){
     }
     buffer.erase(0, buffer.find(' ') + 1);
     buffer.erase(0, buffer.find(' ') + 1);
-    if (server.getUsers().at(fd).getNickname() != "admin"){
+    if (server.getUsers().at(fd).getNickname() != "achatela" && server.getUsers().at(fd).getNickname() != "hcarpent"){
         reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 491 " + server.getUsers().at(fd).getNickname() + " :Your nickname is not valid !\r\n");
         return ;
     }
