@@ -299,16 +299,21 @@ void Command::LIST(std::string buffer, int fd,  Server & server){
         for (std::vector<Channel>::iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++){
             stream << it->getFdList().size();
             reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 322 " + server.getUsers().at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
+            stream.str("");
         }
     }
     else{
-        for (std::vector<Channel>::iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++){
-            std::cout << "channel name = " << it->getChannelName() << " cmp_name = " << cmp_name << std::endl;
+        std::vector<Channel>::iterator it = server.getChannels().begin();
+        for (; it != server.getChannels().end(); it++){
             if (it->getChannelName() == cmp_name){
                 stream << it->getFdList().size();
                 reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 322 " + server.getUsers().at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
                 break;
             }
+        }
+        if (it == server.getChannels().end()){
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 402 " + server.getUsers().at(fd).getUsername() + " " + cmp_name + " :No such server\r\n");
+            return ;
         }
     }
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 323 " + server.getUsers().at(fd).getUsername() + " :End of /LIST\r\n");
