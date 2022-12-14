@@ -95,14 +95,14 @@ void Command::INVITE(std::string buffer, int fd,  Server & server){
             break;
     }
     if (it_fd == it_chan->getFdList().end()){
-        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You are not member of the channel\r\n");
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You are not on channel\r\n");
         return ;
     }
 
     std::vector<std::string>::iterator it_userIn = it_chan->getUserList().begin();
     for (; it_userIn != it_chan->getUserList().end(); it_userIn++){
         if (*it_userIn == nickname){
-            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 443 " + nickname + " " + chan_name + " :User is already member of the channel\r\n");
+            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 443 " + server.getUsers().at(fd).getNickname() + " " + nickname + " " + chan_name + " :User is already on channel\r\n");
             return;
         }
     }
