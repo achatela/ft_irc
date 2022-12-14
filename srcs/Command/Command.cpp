@@ -828,7 +828,7 @@ void Command::TOPIC(std::string buffer, int fd,  Server & server){
 
     std::string toFind = chan_name;
     if (chan_name[0] != '#'){
-        std::string toFind = "#" + chan_name;
+        toFind = "#" + chan_name;
     }  
     std::vector<Channel>::iterator it = server.getChannels().begin();
 
@@ -838,19 +838,23 @@ void Command::TOPIC(std::string buffer, int fd,  Server & server){
         it++;
     }
     if (it == server.getChannels().end()){
-        chan_name.erase(chan_name.end() - 2, chan_name.end());
         reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You're not on that channel\r\n");
         return;
     }
-    for (std::vector<std::string>::iterator it2 = it->getUserList().begin(); it2 != it->getUserList().end(); it2++){
+    std::vector<std::string>::iterator it2 = it->getUserList().begin();
+    for (; it2 != it->getUserList().end(); it2++){
         if (*it2 == server.getUsers().at(fd).getNickname()){
-            chan_name.erase(chan_name.end() - 2, chan_name.end());
-            reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You're not on that channel\r\n");
-            return;
+            break;
         }
     }
+    if (it2 == it->getUserList().end()){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You're not on that channel\r\n");
+        return ;
+    }
 
-    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " TOPIC " + chan_name + " " + buffer);
+    for (std::vector<int>::iterator it_fd = it->getFdList().begin(); it_fd != it->getFdList().end(); it_fd++){
+        reply(*it_fd, ":" + server.getUsers().at(fd).getFullHostname() + " TOPIC " + chan_name + " " + buffer);
+    }
     it->clearTopic();
     it->setTopic(buffer);
 };
