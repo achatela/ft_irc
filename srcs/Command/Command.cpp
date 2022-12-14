@@ -65,7 +65,6 @@ void Command::INVITE(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string chan_name(buffer);
     chan_name.erase(chan_name.end() - 2, chan_name.end());
-    std::cout << nickname << " " << chan_name << std::endl;
     int fd_invited;
     std::map<int, User>::iterator it = server.getUsers().begin();
     for (; it != server.getUsers().end(); it++){
