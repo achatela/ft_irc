@@ -55,7 +55,7 @@ void Command::INFO(std::string, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :- hcarpent <hcarpent@student.42.fr>\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :\r\n");
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :Thanks for using ClownRC !\r\n");
-    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 371 " + server.getUsers().at(fd).getNickname() + " :End of /INFO list\r\n");
+    reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 374 " + server.getUsers().at(fd).getNickname() + " :End of /INFO list\r\n");
 };
 
 
@@ -670,6 +670,10 @@ void Command::NOTICE(std::string buffer, int fd, Server & server){
             break;
         it++;
     }
+    if (it == server.getUsers().end()){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
+        return ;
+    }
     reply(it->first, ":" + server.getUsers().at(fd).getFullHostname() + " NOTICE " + buffer + "\r\n");
 };
 
@@ -906,6 +910,8 @@ void Command::WHO(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find("\r\n")));
 
+    //à refaire
+    
     if (tmp[0] == '#'){
         reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 315 " + server.getUsers().at(fd).getNickname() + " " + server.getUsers().at(fd).getUsername() + " :End of /WHO list\r\n");
     }
