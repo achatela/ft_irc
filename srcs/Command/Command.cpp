@@ -107,9 +107,7 @@ void Command::INVITE(std::string buffer, int fd,  Server & server){
         }
     }
 
-    // reply(4, ":" + server.getUsers().at(fd).getFullHostname() + " INVITE achatel #e\r\n");
     reply(fd_invited, ":" + server.getUsers().at(fd).getFullHostname() + " INVITE " + nickname + " " + chan_name + "\r\n");
-    // reply(5, ":" + server.getUsers().at(fd).getFullHostname() + " 341 achatel_ #e achatel\r\n");
     for (std::vector<int>::iterator it_fd = it_chan->getFdList().begin(); it_fd != it_chan->getFdList().end(); it_fd++){
         reply(*it_fd, ":" + server.getUsers().at(fd).getFullHostname() + " 341 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " " + nickname + "\r\n");
     }
@@ -678,6 +676,10 @@ void Command::OPER(std::string buffer, int fd,  Server & server){
     }
     buffer.erase(0, buffer.find(' ') + 1);
     buffer.erase(0, buffer.find(' ') + 1);
+    if (server.getUsers().at(fd).getNickname() != "admin"){
+        reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 491 " + server.getUsers().at(fd).getNickname() + " :Your nickname is not valid !\r\n");
+        return ;
+    }
     if (buffer == "admin\r\n"){
         reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 381 " + server.getUsers().at(fd).getNickname() + " :You are now an IRC operator\r\n");
         std::string mode = server.getUsers().at(fd).getUserMode();
