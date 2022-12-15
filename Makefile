@@ -1,23 +1,24 @@
 NAME = ircserv
+
 SRCFILES = main.cpp Server/Server.cpp User/User.cpp Command/Command.cpp
 SOURCE = ./srcs/
-OBJ = ./objs/
-CXX = c++
 SRCS = ${addprefix ${SOURCE},${SRCFILES}}
+
+CXX = c++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98
+
 OBJSFILES = $(SRCFILES:.cpp=.o)
 OBJS = $(SRCS:.cpp=.o)
-OBJS_PATH = ${addprefix ${OBJ},${OBJSFILES}}
+OBJS_PATH = ${addprefix ${SOURCE},${OBJSFILES}}
 
 %.o: %.cpp includes/utils.hpp includes/Server.hpp includes/User.hpp includes/Command.hpp
-	$(CXX) $(CXXFLAGS) -I.  -c $< -o $@
+	$(CXX) $(CXXFLAGS) -I. -c $< -o $@
 
 all: $(NAME)
 
 $(NAME): $(OBJS) #$(OBJS_PATH) 
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
-	mv ${OBJS} objs/
-
+	
 clean:
 	rm -f $(OBJS_PATH)
 

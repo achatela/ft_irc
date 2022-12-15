@@ -77,7 +77,7 @@ void Server::sondage(){
     //     }
     // }
     
-    if (poll(&getPfds()[0], getPfds().size(), 0) == -1){
+    if (poll(&getPfds()[0], getPfds().size(), -1) == -1){
         return;
     }
     if (getPfds()[0].revents == POLLIN){

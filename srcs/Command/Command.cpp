@@ -58,7 +58,6 @@ void Command::INFO(std::string, int fd, Server & server){
     reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 374 " + server.getUsers().at(fd).getNickname() + " :End of /INFO list\r\n");
 };
 
-
 void Command::INVITE(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string nickname = buffer.substr(0, buffer.find(" "));
@@ -126,7 +125,6 @@ void Command::ISO(std::string buffer, int fd,  Server & server){
         }
     }
 };
-
 
 void Command::JOIN(std::string buffer, int fd,  Server & server){
     // No ERR_BADCHANNELKEY because we don't handle +k channel mode
@@ -249,7 +247,6 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
         server.getChannels().erase(it);
 
 };
-
 
 void Command::KILL(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
@@ -483,7 +480,6 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
                 reply(fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + it->getChannelMode() + "\r\n");
                 return;
             }
-
 
             buffer.erase(0, buffer.find(' ') + 1);
             size_t i = 0;
@@ -998,9 +994,7 @@ void Command::USER(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     server.getUsers().at(fd).setUsername(buffer.substr(0, buffer.find(' ')));
     buffer.erase(0, buffer.find(' ') + 1);
-    //c'est quoi ? <mode> ?
     buffer.erase(0, buffer.find(' ') + 1);
-    //server.getUsers().at(fd).setHostname(buffer.substr(0, buffer.find(" :")));
     buffer.erase(0, buffer.find(" :") + 2);
     server.getUsers().at(fd).setRealName(buffer.substr(0, buffer.find("\r\n")));
     if (DEBUG){
