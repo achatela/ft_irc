@@ -31,7 +31,7 @@ class Command{
 
         std::map<std::string, void  (*)(std::string buffer, int fd,  Server & server)> getCommand(void){return _commandsFilled;};
 
-        static void reply(int fd, std::string toSend);
+        static void reply(int atFd, Server & server, int fd, std::string toSend);
         static void  ACCEPT(std::string buffer, int fd,  Server & server);
         // static void  ACTION(std::string buffer, int fd,  Server & server);
         static void  ADMIN(std::string buffer, int fd,  Server & server);

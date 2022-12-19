@@ -93,6 +93,9 @@ void Server::sondage(){
     //     }
     // }
     
+
+            // https://stackoverflow.com/questions/12170037/when-to-use-the-pollout-event-of-the-poll-c-function
+
     if (poll(&getPfds()[0], getPfds().size(), -1) == -1){
         return;
     }

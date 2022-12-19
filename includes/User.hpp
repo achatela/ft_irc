@@ -26,10 +26,17 @@ class User{
         std::string _usermode;
         std::string _awayMsg;
 
+        // a chaque append a _toSend, ajouter le fd au vector; quand on envoie, send(get.atuser(machin).getFdToSend[0], _toSend.find.("\r\n"), .length.previousArg);
+        std::string         _toSend;
+        std::vector<int>    _fdToSend;
+
     public:
         User();
         User(std::string password, struct sockaddr_in address);
         ~User();
+
+        std::string &getToSend(){return _toSend;}
+        std::vector<int> &getFdToSend(){return _fdToSend;}
 
         std::string getBuffer(){return _buffer;};
         void setBuffer(std::string buf){_buffer = buf;};
