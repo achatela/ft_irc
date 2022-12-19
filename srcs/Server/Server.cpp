@@ -10,16 +10,28 @@ Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_addre
 
     (void)_addrlen;
     _command_functions = _tmp.getCommand();
-    gethostname(_hostname, 40);
+    if (gethostname(_hostname, 40) != 0){
+        std::cout << "Gethostname failed" << std::endl;
+        exit(1);
+    }
     std::cout << "host name is " << _hostname << std::endl;
     handleErrors(ac, av);
     _server_listen = socket(PF_INET, SOCK_STREAM, 0);
-    setsockopt(_server_listen, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &_opt, sizeof(_opt));
+    if (setsockopt(_server_listen, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &_opt, sizeof(_opt)) != 0){
+        std::cout << "Setsockopt failed" << std::endl;
+        exit(1);
+    }
     _address.sin_family = AF_INET;
     _address.sin_addr.s_addr = INADDR_ANY;
     _address.sin_port = htons(_port); // remplacer par av[1]
-    bind(_server_listen, (struct sockaddr*)&_address, sizeof(_address));
-    listen(_server_listen, 10); // check la doc 10 = file d'attente
+    if (bind(_server_listen, (struct sockaddr*)&_address, sizeof(_address)) != 0){
+        std::cout << "Bind failed" << std::endl;
+        exit(1);
+    }
+    if (listen(_server_listen, 10) != 0){
+        std::cout << "Listen failed" << std::endl;
+        exit(1);
+    }
     getPfds().push_back(pollfd());
     getPfds().back().fd = _server_listen;
     getPfds().back().events = POLLIN;
@@ -34,6 +46,10 @@ void Server::addPfd(){
 
     //Check if fd < -1 et handle
     sock_fd = accept(_server_listen, (struct sockaddr*)&address, &addr_len);
+    if (sock_fd < 0){
+        std::cout << "Accept failed" << std::endl << "Cannot connect to the socket" << std::endl;
+        return ;
+    }
     getPfds().push_back(pollfd());
     getPfds().back().fd = sock_fd;
     getPfds().back().events = POLLIN;
