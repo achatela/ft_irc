@@ -16,7 +16,7 @@ Server::Server(int ac, char **av) : _opt(1), _status(ON), _addrlen(sizeof(_addre
     }
     std::cout << "host name is " << _hostname << std::endl;
     handleErrors(ac, av);
-    _server_listen = socket(PF_INET, SOCK_STREAM, 0);
+    _server_listen = socket(PF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (setsockopt(_server_listen, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &_opt, sizeof(_opt)) != 0){
         std::cout << "Setsockopt failed" << std::endl;
         exit(1);
@@ -95,48 +95,57 @@ void Server::sondage(){
     
 
             // https://stackoverflow.com/questions/12170037/when-to-use-the-pollout-event-of-the-poll-c-function
+    std::cout << "stuck1" << std::endl;
     if (getAtFd().size() >= 1){
         // Set les getPfds()[index].events a POLLOUT correspondant au int dans getAtFd
         for (std::vector<int>::iterator it = getAtFd().begin(); it != getAtFd().end(); it++){
+            std::cout << "stuck2" << std::endl;
             for (int i = 1; i < getPfds().size(); i++){
+                std::cout << "stuck3" << std::endl;
                 if (*it == getPfds()[i].fd){
+                    std::cout << "index fd + 1" << std::endl;
                     _index_fds.push_back(getPfds()[i].fd);
                     getPfds()[i].revents = POLLOUT;
                 }
             }
         }
     }
-    std::cout<<"avantpoll"<<std::endl;
-    if (poll(&getPfds()[0], getPfds().size(), -1) == -1){
+    if (!(poll(&getPfds()[0], getPfds().size(), -2) > 0)){
+        std::cout << "ret" << std::endl;
         for (int i = 0; i < _index_fds.size(); i++){
+            std::cout << "stuck4" << std::endl;
             getPfds()[_index_fds[i]].revents = POLLIN;
         }
         _index_fds.clear();
         return;
     }
-    std::cout<<"aprespoll"<<std::endl;
     if (getAtFd().size() >= 1){
+        std::cout << "in if" << std::endl;
+        std::cout << getUsers().at(_index_fds[0]).getToSend().empty() << std::endl;
         int j = 0;
         // Send, recuperer le retour de send et enlever le nombre de caracteres correspondant
         for (int i = 0; i < _index_fds.size(); i++){
             while (!getUsers().at(_index_fds[i]).getToSend().empty()){
-                std::string tmp(getUsers().at(_index_fds[i]).getToSend().begin(), (getUsers().at(_index_fds[i]).getToSend().begin() + getUsers().at(_index_fds[i]).getToSend().find("\n") + 1));
+                std::cout << "stuc5k" << std::endl;
+                std::string tmp(getUsers().at(_index_fds[i]).getToSend().begin(), (getUsers().at(_index_fds[i]).getToSend().begin() + getUsers().at(_index_fds[i]).getToSend().find("\r\n") + 2));
+                if (DEBUG)
+                    std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << getUsers().at(_index_fds[i]).getFdToSend()[0] << "] " << BLUE << tmp << RESET;
                 j = send(getUsers().at(_index_fds[i]).getFdToSend()[0], tmp.c_str(), tmp.length(), 0);
                 if (j == -1)
                     break;
                 if (j == tmp.length()){
                     getUsers().at(_index_fds[i]).getFdToSend().erase(getUsers().at(_index_fds[i]).getFdToSend().begin());
-                    getUsers().at(_index_fds[i]).getToSend().erase(getUsers().at(_index_fds[i]).getToSend().begin(), (getUsers().at(_index_fds[i]).getToSend().begin() + getUsers().at(_index_fds[i]).getToSend().find("\n") + 1));
+                    getUsers().at(_index_fds[i]).getToSend().erase(getUsers().at(_index_fds[i]).getToSend().begin(), (getUsers().at(_index_fds[i]).getToSend().begin() + getUsers().at(_index_fds[i]).getToSend().find("\r\n") + 2));
                 }
-                if (tmp == "")
-                    break;
             }
         }
         for (int i = 0; i < _index_fds.size(); i++){
+            std::cout << "stuck6" << std::endl;
             if (getUsers().at(_index_fds[i]).getToSend().empty()){
+                getUsers().at(_index_fds[i]).getToSend().clear();
                 getAtFd().erase(std::find(getAtFd().begin(), getAtFd().end(), _index_fds[i]));
             }
-            getPfds()[_index_fds[i]].revents = POLLIN;
+            // getPfds()[_index_fds[i]].revents = POLLIN;
         }
         _index_fds.clear();
         // Si la chaine a envoye est empty, pop le fd correspondant dans getAtFd
@@ -183,6 +192,48 @@ fix:
                 else{
                     int j = it - getPfds().begin();
                     handleRequests(server_reply, getPfds()[j].fd);
+
+                    if (getAtFd().size() >= 1){
+                        // Set les getPfds()[index].events a POLLOUT correspondant au int dans getAtFd
+                        for (std::vector<int>::iterator it = getAtFd().begin(); it != getAtFd().end(); it++){
+                            for (int i = 1; i < getPfds().size(); i++){
+                                if (*it == getPfds()[i].fd){
+                                    _index_fds.push_back(getPfds()[i].fd);
+                                    getPfds()[i].revents = POLLOUT;
+                                }
+                            }
+                        }
+                    }
+                  
+                    if (getAtFd().size() >= 1){
+                        std::cout << getUsers().at(_index_fds[0]).getToSend().empty() << std::endl;
+                        int j = 0;
+                        // Send, recuperer le retour de send et enlever le nombre de caracteres correspondant
+                        for (int i = 0; i < _index_fds.size(); i++){
+                            while (!getUsers().at(_index_fds[i]).getToSend().empty()){
+                                std::string tmp(getUsers().at(_index_fds[i]).getToSend().begin(), (getUsers().at(_index_fds[i]).getToSend().begin() + getUsers().at(_index_fds[i]).getToSend().find("\r\n") + 2));
+                                if (DEBUG)
+                                    std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << getUsers().at(_index_fds[i]).getFdToSend()[0] << "] " << BLUE << tmp << RESET;
+                                j = send(getUsers().at(_index_fds[i]).getFdToSend()[0], tmp.c_str(), tmp.length(), 0);
+                                if (j == -1)
+                                    break;
+                                if (j == tmp.length()){
+                                    getUsers().at(_index_fds[i]).getFdToSend().erase(getUsers().at(_index_fds[i]).getFdToSend().begin());
+                                    getUsers().at(_index_fds[i]).getToSend().erase(getUsers().at(_index_fds[i]).getToSend().begin(), (getUsers().at(_index_fds[i]).getToSend().begin() + getUsers().at(_index_fds[i]).getToSend().find("\r\n") + 2));
+                                }
+                            }
+                        }
+                        for (int i = 0; i < _index_fds.size(); i++){
+                            if (getUsers().at(_index_fds[i]).getToSend().empty()){
+                                getUsers().at(_index_fds[i]).getToSend().clear();
+                                getAtFd().erase(std::find(getAtFd().begin(), getAtFd().end(), _index_fds[i]));
+                            }
+                            // getPfds()[_index_fds[i]].revents = POLLIN;
+                        }
+                        _index_fds.clear();
+                        // Si la chaine a envoye est empty, pop le fd correspondant dans getAtFd
+                        // Reset les getPfds(index).events a POLLIN
+                    }
                     memset(server_reply, 0, 512);
                     return ;
                 }

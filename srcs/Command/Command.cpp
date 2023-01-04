@@ -6,10 +6,7 @@ void Command::reply(int atFd, Server & server, int fd, std::string toSend){
     server.getUsers().at(atFd).getFdToSend().push_back(fd);
     if (std::find(server.getAtFd().begin(), server.getAtFd().end(), atFd) == server.getAtFd().end())
         server.getAtFd().push_back(atFd);
-    std::cout << "size = " << server.getAtFd().size() << std::endl;
     // send(fd, toSend.c_str(), toSend.length(), 0);
-    if (DEBUG)
-        std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
 }
 
 void Command::ACCEPT(std::string, int fd, Server & server){
