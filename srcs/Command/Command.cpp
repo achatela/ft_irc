@@ -2,11 +2,12 @@
 #include "../../includes/Server.hpp"
 
 void Command::reply(int atFd, Server & server, int fd, std::string toSend){
-    (void)atFd;
-    (void)server;
     server.getUsers().at(atFd).getToSend() += toSend;
     server.getUsers().at(atFd).getFdToSend().push_back(fd);
-    send(fd, toSend.c_str(), toSend.length(), 0);
+    if (std::find(server.getAtFd().begin(), server.getAtFd().end(), atFd) == server.getAtFd().end())
+        server.getAtFd().push_back(atFd);
+    std::cout << "size = " << server.getAtFd().size() << std::endl;
+    // send(fd, toSend.c_str(), toSend.length(), 0);
     if (DEBUG)
         std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
 }

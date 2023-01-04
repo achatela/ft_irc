@@ -95,13 +95,57 @@ void Server::sondage(){
     
 
             // https://stackoverflow.com/questions/12170037/when-to-use-the-pollout-event-of-the-poll-c-function
-
+    if (getAtFd().size() >= 1){
+        // Set les getPfds()[index].events a POLLOUT correspondant au int dans getAtFd
+        for (std::vector<int>::iterator it = getAtFd().begin(); it != getAtFd().end(); it++){
+            for (int i = 1; i < getPfds().size(); i++){
+                if (*it == getPfds()[i].fd){
+                    _index_fds.push_back(getPfds()[i].fd);
+                    getPfds()[i].revents = POLLOUT;
+                }
+            }
+        }
+    }
+    std::cout<<"avantpoll"<<std::endl;
     if (poll(&getPfds()[0], getPfds().size(), -1) == -1){
+        for (int i = 0; i < _index_fds.size(); i++){
+            getPfds()[_index_fds[i]].revents = POLLIN;
+        }
+        _index_fds.clear();
         return;
+    }
+    std::cout<<"aprespoll"<<std::endl;
+    if (getAtFd().size() >= 1){
+        int j = 0;
+        // Send, recuperer le retour de send et enlever le nombre de caracteres correspondant
+        for (int i = 0; i < _index_fds.size(); i++){
+            while (!getUsers().at(_index_fds[i]).getToSend().empty()){
+                std::string tmp(getUsers().at(_index_fds[i]).getToSend().begin(), (getUsers().at(_index_fds[i]).getToSend().begin() + getUsers().at(_index_fds[i]).getToSend().find("\n") + 1));
+                j = send(getUsers().at(_index_fds[i]).getFdToSend()[0], tmp.c_str(), tmp.length(), 0);
+                if (j == -1)
+                    break;
+                if (j == tmp.length()){
+                    getUsers().at(_index_fds[i]).getFdToSend().erase(getUsers().at(_index_fds[i]).getFdToSend().begin());
+                    getUsers().at(_index_fds[i]).getToSend().erase(getUsers().at(_index_fds[i]).getToSend().begin(), (getUsers().at(_index_fds[i]).getToSend().begin() + getUsers().at(_index_fds[i]).getToSend().find("\n") + 1));
+                }
+                if (tmp == "")
+                    break;
+            }
+        }
+        for (int i = 0; i < _index_fds.size(); i++){
+            if (getUsers().at(_index_fds[i]).getToSend().empty()){
+                getAtFd().erase(std::find(getAtFd().begin(), getAtFd().end(), _index_fds[i]));
+            }
+            getPfds()[_index_fds[i]].revents = POLLIN;
+        }
+        _index_fds.clear();
+        // Si la chaine a envoye est empty, pop le fd correspondant dans getAtFd
+        // Reset les getPfds(index).events a POLLIN
     }
     if (getPfds()[0].revents == POLLIN){
         addPfd();
     }
+
     if (getPfds().size() > 1)
     {
         for (std::vector<pollfd>::iterator it = getPfds().begin(); it != getPfds().end(); it++)

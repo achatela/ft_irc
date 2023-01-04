@@ -26,6 +26,9 @@ class Server{
         std::vector <Channel> _channels;
         std::time_t _server_time;
 
+        std::vector<int> _at_fd;
+        std::vector<int> _index_fds;
+
     public:
         Server();
         Server(int ac, char **av);
@@ -52,6 +55,7 @@ class Server{
         char * getHostname(){return _hostname;};
         void setStatus(int toSet){_status = toSet;}
 
+        std::vector<int>& getAtFd(){return _at_fd;};
 };
 
 #endif

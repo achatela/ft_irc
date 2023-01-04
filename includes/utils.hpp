@@ -2,6 +2,7 @@
 # define UTILS_HPP
 
 # include <iostream>
+# include <algorithm>
 # include <sys/types.h>
 # include <sys/socket.h>
 # include <cstdlib>
