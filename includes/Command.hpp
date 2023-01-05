@@ -21,7 +21,8 @@ class Command{
         static int getChannel(std::string chan_name, std::vector<Channel> & channels){
             int i = 0;
             std::vector<Channel>::iterator it = channels.begin();
-            for (; it != channels.end() && it->getChannelName() != chan_name; it++){
+            std::vector<Channel>::iterator it_end = channels.end();
+            for (; it != it_end && it->getChannelName() != chan_name; it++){
                 i++;
             }
             if (it == channels.end())

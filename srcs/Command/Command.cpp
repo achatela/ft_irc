@@ -80,27 +80,30 @@ void Command::INVITE(std::string buffer, int fd,  Server & server){
     }
 
     std::vector<Channel>::iterator it_chan = server.getChannels().begin();
-    for (; it_chan != server.getChannels().end(); it_chan++){
+    std::vector<Channel>::iterator it_chan_end = server.getChannels().end();
+    for (; it_chan != it_chan_end; it_chan++){
         if (it_chan->getChannelName() == chan_name)
             break;
     }
-    if (it_chan == server.getChannels().end()){
+    if (it_chan == it_chan_end){
         reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
         return ;
     }
 
     std::vector<int>::iterator it_fd = it_chan->getFdList().begin();
-    for (; it_fd != it_chan->getFdList().end(); it_fd++){
+    std::vector<int>::iterator it_fd_end = it_chan->getFdList().end();
+    for (; it_fd != it_fd_end; it_fd++){
         if (*it_fd == fd)
             break;
     }
-    if (it_fd == it_chan->getFdList().end()){
+    if (it_fd == it_fd_end){
         reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You are not on channel\r\n");
         return ;
     }
 
     std::vector<std::string>::iterator it_userIn = it_chan->getUserList().begin();
-    for (; it_userIn != it_chan->getUserList().end(); it_userIn++){
+    std::vector<std::string>::iterator it_userIn_end = it_chan->getUserList().end();
+    for (; it_userIn != it_userIn_end; it_userIn++){
         if (*it_userIn == nickname){
             reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 443 " + server.getUsers().at(fd).getNickname() + " " + nickname + " " + chan_name + " :User is already on channel\r\n");
             return;
@@ -108,7 +111,8 @@ void Command::INVITE(std::string buffer, int fd,  Server & server){
     }
 
     reply(fd, server, fd_invited, ":" + server.getUsers().at(fd).getFullHostname() + " INVITE " + nickname + " " + chan_name + "\r\n");
-    for (std::vector<int>::iterator it_fd = it_chan->getFdList().begin(); it_fd != it_chan->getFdList().end(); it_fd++){
+    std::vector<int>::iterator it_fd_end2 = it_chan->getFdList().end();
+    for (std::vector<int>::iterator it_fd = it_chan->getFdList().begin(); it_fd != it_fd_end2; it_fd++){
         reply(fd, server, *it_fd, ":" + server.getUsers().at(fd).getFullHostname() + " 341 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " " + nickname + "\r\n");
     }
 
@@ -121,7 +125,8 @@ void Command::ISO(std::string buffer, int fd,  Server & server){
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     std::string toFind(tmp.substr(0, tmp.find("\r\n")));
 
-      for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+    std::map<int, User>::iterator it_end = server.getUsers().end();
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != it_end; it++){
         if (it->second.getNickname() == toFind){
             reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 303 " + server.getUsers().at(fd).getNickname() + " :" + toFind + "\r\n");
         }
@@ -135,31 +140,44 @@ void Command::JOIN(std::string buffer, int fd,  Server & server){
         reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 461 " + server.getUsers().at(fd).getNickname() + " KILL :Not enough parameters\r\n");
         return ;
     }
+    std::string fullHostName = server.getUsers().at(fd).getFullHostname();
+    std::string nickname = server.getUsers().at(fd).getNickname();
     buffer.erase(0, buffer.find(' ') + 1);
     std::string chan_name(buffer.substr(0, buffer.find("\r\n")));
     std::vector<Channel>::iterator it = server.getChannels().begin();
-    for (; it != server.getChannels().end(); it++){
+    std::vector<Channel>::iterator it_end = server.getChannels().end();
+
+    for (; it != it_end; it++){
         if (it->getChannelName() == chan_name){
             if (it->getChannelMode().find('i') != std::string::npos){
+
                 std::list<std::string>::iterator it_pend = it->getPending().begin();
-                for (; it_pend != it->getPending().end(); it_pend++){
-                    if (*it_pend == server.getUsers().at(fd).getNickname())
+                std::list<std::string>::iterator it_pend_end = it->getPending().end();
+
+                for (; it_pend != it_pend_end; it_pend++){
+                    if (*it_pend == nickname)
                         break;
                 }
-                if (it_pend == it->getPending().end()){
-                    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 473 " +  server.getUsers().at(fd).getNickname() + " " + chan_name + " :You are not invited on this channel\r\n");
+                if (it_pend == it_pend_end){
+                    reply(fd, server, fd, ":" + fullHostName + " 473 " +  nickname + " " + chan_name + " :You are not invited on this channel\r\n");
                     return;
                 }
                 it->getPending().erase(it_pend);
             }
-            for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it->getBanList().end(); it2++){
-                if ("*!*" + server.getUsers()[fd].getUsername() + "@*" + server.getUsers()[fd].getDomainName() + "\r\n" == *it2){
-                    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 474 " +  server.getUsers().at(fd).getNickname() + " " + chan_name + " :You are banned from this channel\r\n");
+
+            std::string username = server.getUsers()[fd].getUsername();
+            std::vector<std::string>::iterator it2_end = it->getBanList().end();
+
+            for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it2_end; it2++){
+                if ("*!*" + username + "@*" + server.getUsers()[fd].getDomainName() + "\r\n" == *it2){
+                    reply(fd, server, fd, ":" + fullHostName + " 474 " +  nickname + " " + chan_name + " :You are banned from this channel\r\n");
                     return;
                 }
             }
-            for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
-                reply(fd, server, *ite, ":" + server.getUsers().at(fd).getFullHostname() + " JOIN :" + chan_name + "\r\n");
+
+            std::vector<int>::iterator ite_end = it->getFdList().end();
+            for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != ite_end; ite++){
+                reply(fd, server, *ite, ":" + fullHostName + " JOIN :" + chan_name + "\r\n");
             }
             break;
         }
@@ -182,21 +200,23 @@ void Command::JOIN(std::string buffer, int fd,  Server & server){
     //     }
     // }
     it->pushFdList(fd);
-    it->getUserList().push_back(server.getUsers().at(fd).getNickname());
+    it->getUserList().push_back(nickname);
     std::string msg = "";
     std::vector<int>::iterator it2 = it->getFdList().begin();
-    for (std::vector<std::string>::iterator ite = it->getUserList().begin() ; ite != it->getUserList().end(); ite++){
+    std::vector<std::string>::iterator ite_end = it->getUserList().end();
+
+    for (std::vector<std::string>::iterator ite = it->getUserList().begin() ; ite != ite_end; ite++){
         if (it->getUserMode().at(*it2).find("o") != std::string::npos)
             msg += "@";
         msg += *ite;
-        if (it->getUserList().end() - ite != 1){
+        if (ite_end - ite != 1){
             msg += " ";
         }
         it2++;
     }
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 353 " + server.getUsers().at(fd).getNickname() + " = " + chan_name + " :" + msg + "\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 366 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :End of /NAMES list\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " JOIN " + chan_name + "\r\n");
+    reply(fd, server, fd, ":" + fullHostName + " 353 " + nickname + " = " + chan_name + " :" + msg + "\r\n");
+    reply(fd, server, fd, ":" + fullHostName + " 366 " +nickname + " " + chan_name + " :End of /NAMES list\r\n");
+    reply(fd, server, fd, ":" + fullHostName + " JOIN " + chan_name + "\r\n");
 };
 
 
@@ -207,38 +227,42 @@ void Command::KICK(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string nickname =  buffer.substr(0, buffer.find(' '));
     std::vector<Channel>::iterator it = server.getChannels().begin();
+    std::vector<Channel>::iterator it_end = server.getChannels().end();
+    std::string nickname2 = server.getUsers().at(fd).getNickname();
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
 
-    for (; it != server.getChannels().end(); it++){
+    for (; it != it_end; it++){
         if (it->getChannelName() == chan_name)
             break;
     }
-    if (it == server.getChannels().end()){// a check
-        reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
+    if (it == it_end){// a check
+        reply(fd, server, fd, ":" + hostname + " 401 " + nickname2 + " " + nickname + " :No such nick/channel\r\n");
         return;
     }
 
     std::vector<std::string>::iterator it2 = it->getUserList().begin();
-    for (; it2 != it->getUserList().end(); it2++){
+    std::vector<std::string>::iterator it_end2 = it->getUserList().end();
+    for (; it2 != it_end2; it2++){
         if (*it2 == nickname)
             break;
     }
-    if (it2 == it->getUserList().end()){// a check
-        reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
+    if (it2 == it_end2){// a check
+        reply(fd, server, fd, ":" + hostname + " 401 " + nickname2 + " " + nickname + " :No such nick/channel\r\n");
         return;
     }
 
     if (server.getUsers().at(fd).getUserMode().find("o") == std::string::npos && it->getUserMode().at(fd).find("o") == std::string::npos){ // check if he's chan op too
-        reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + chan_name + " :You're not channel operator\r\n");
+        reply(fd, server, fd, ":" + hostname + " 482 " + nickname2 + " " + chan_name + " :You're not channel operator\r\n");
         return ;
     }
 
     std::vector<int>::iterator it3 = it->getFdList().begin();
     for (; it3 != it->getFdList().end(); it3++){
-        reply(fd, server, *it3, ":" + server.getUsers().at(fd).getFullHostname() + " KICK " + chan_name + " " + nickname + " :\r\n");
+        reply(fd, server, *it3, ":" + hostname + " KICK " + chan_name + " " + nickname + " :\r\n");
     }
     it2 = it->getUserList().begin();
     it3 = it->getFdList().begin();
-    for (; it2 != it->getUserList().end(); it2++, it3++){
+    for (; it2 != it_end2; it2++, it3++){
         if (*it2 == nickname){
             it->getUserList().erase(it2);
             it->getFdList().erase(it3);
@@ -254,20 +278,29 @@ void Command::KILL(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string nickname =  buffer.substr(0, buffer.find(' '));
     buffer.erase(0, buffer.find(' ') + 1);
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
+    std::string nickname2 = server.getUsers().at(fd).getNickname();
+
     if (buffer == ":\r\n"){
-        reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 461 " + server.getUsers().at(fd).getNickname() + " KILL :Not enough parameters\r\n");
+        reply(fd, server, fd, ":" + hostname + " 461 " + nickname2 + " KILL :Not enough parameters\r\n");
         return;
     }
     if (server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
-        reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 481 " + server.getUsers().at(fd).getNickname() + " :Permission Denied- You're not an IRC operator\r\n");
+        reply(fd, server, fd, ":" + hostname + " 481 " + nickname2 + " :Permission Denied- You're not an IRC operator\r\n");
         return;
     }
-    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+
+    std::map<int, User>::iterator it_end = server.getUsers().end();
+
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != it_end; it++){
         if (it->second.getNickname() == nickname){
-            reply(fd, server, it->first, ":" + server.getUsers().at(fd).getFullHostname() + " KILL " + buffer);
+            reply(fd, server, it->first, ":" + hostname + " KILL " + buffer);
             reply(fd, server, it->first, ":" + it->second.getFullHostname() + " QUIT " + buffer);
-            for (std::vector<pollfd>::iterator it2 = server.getPfds().begin(); it2 != server.getPfds().end(); it2++){
-                if (it2->fd == it->first){
+
+            std::vector<pollfd>::iterator it2_end = server.getPfds().end();
+            int fdToFind = it->first;
+            for (std::vector<pollfd>::iterator it2 = server.getPfds().begin(); it2 != it2_end; it2++){
+                if (it2->fd == fdToFind){
                     close(it2->fd);
                     server.getPfds().erase(it2);
                     server.getUsers().erase(it);
@@ -276,7 +309,7 @@ void Command::KILL(std::string buffer, int fd, Server & server){
             }
         }
     }
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + nickname + " :No such nick/channel\r\n");
+    reply(fd, server, fd, ":" + hostname + " 401 " + nickname2 + " " + nickname + " :No such nick/channel\r\n");
 };
 
 void Command::LINKS(std::string, int fd,  Server & server){
@@ -292,29 +325,33 @@ void Command::LIST(std::string buffer, int fd,  Server & server){
     std::string chan_name(buffer.substr(0, buffer.find(" ")));
     std::string cmp_name(chan_name.substr(0, chan_name.find("\r\n")));
     std::stringstream stream;
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
+    std::string username = server.getUsers().at(fd).getUsername();
 
     if ((chan_name[0] == '\r' && chan_name[1] == '\n') || buffer.size() != chan_name.size()){
-        for (std::vector<Channel>::iterator it = server.getChannels().begin(); it != server.getChannels().end(); it++){
+        std::vector<Channel>::iterator it_end = server.getChannels().end();
+        for (std::vector<Channel>::iterator it = server.getChannels().begin(); it != it_end; it++){
             stream << it->getFdList().size();
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 322 " + server.getUsers().at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
+            reply(fd, server, fd, ":" + hostname + " 322 " + username + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
             stream.str("");
         }
     }
     else{
         std::vector<Channel>::iterator it = server.getChannels().begin();
-        for (; it != server.getChannels().end(); it++){
+        std::vector<Channel>::iterator it_end2 = server.getChannels().end();
+        for (; it != it_end2; it++){
             if (it->getChannelName() == cmp_name){
                 stream << it->getFdList().size();
-                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 322 " + server.getUsers().at(fd).getUsername() + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
+                reply(fd, server, fd, ":" + hostname + " 322 " + username + " " + it->getChannelName() + " " + stream.str() + " " + it->getTopic() + "\r\n");
                 break;
             }
         }
-        if (it == server.getChannels().end()){
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 402 " + server.getUsers().at(fd).getUsername() + " " + cmp_name + " :No such server\r\n");
+        if (it == it_end2){
+            reply(fd, server, fd, ":" + hostname + " 402 " + username + " " + cmp_name + " :No such server\r\n");
             return ;
         }
     }
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 323 " + server.getUsers().at(fd).getUsername() + " :End of /LIST\r\n");
+    reply(fd, server, fd, ":" + hostname + " 323 " + username + " :End of /LIST\r\n");
 };
 
 void Command::MAP(std::string, int fd,  Server & server){
@@ -324,56 +361,71 @@ void Command::MAP(std::string, int fd,  Server & server){
 void Command::MODE(std::string buffer, int fd,  Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp;
+
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
+    std::string nickname = server.getUsers().at(fd).getNickname();
+
     if (buffer.find(" ") == std::string::npos)
         tmp = buffer.substr(0, buffer.find("\r\n"));
     else
         tmp = buffer.substr(0, buffer.find(" "));
     if (buffer.find(' ') != std::string::npos)
         buffer.erase(0, buffer.find(' ') + 1);
+
+
     if (tmp[0] == '#'){
         std::string flags(buffer.substr(0, buffer.find(" ")));
         size_t space_num = 0;
 
         std::vector<Channel>::iterator it = server.getChannels().begin();
+        std::vector<Channel>::iterator it_end = server.getChannels().end();
 
-        for (; it != server.getChannels().end(); it++){
+        for (; it != it_end; it++){
             if (it->getChannelName() == tmp)
                 break;
         }
-        if (it == server.getChannels().end())
+        if (it == it_end)
             return ;
-        std::vector<std::string>::iterator it5 = it->getUserList().begin();
+
+        std::string channelName = it->getChannelName();
+
         if (server.getUsers().at(fd).getUserMode().find("o") == std::string::npos){
-            for(; it5 != it->getUserList().end(); it5++){
-                if (*it5 == server.getUsers().at(fd).getNickname()){
+            std::vector<std::string>::iterator it5 = it->getUserList().begin();
+            std::vector<std::string>::iterator it5_end = it->getUserList().end();
+
+            for(; it5 != it5_end; it5++){
+                if (*it5 == nickname){
                     break;
                 }
             }
-        }
-        if (it5 == it->getUserList().end()){
-                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 441 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :User not on the channel\r\n");
+            if (it5 == it5_end){
+                reply(fd, server, fd, ":" + hostname + " 441 " + nickname + " " + it->getChannelName() + " :User not on the channel\r\n");
                 return ;
+            }
         }
         if (flags == buffer && (buffer.substr(0, buffer.find("\r\n")) != "+i" && buffer.substr(0, buffer.find("\r\n")) != "-i"))
         {
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + it->getChannelMode() + "\r\n");
+            reply(fd, server, fd, ":" + hostname + " 324 " + nickname + " " + tmp + " +" + it->getChannelMode() + "\r\n");
             return;
         }
+
         if (flags[0] != '#'){
             if (buffer.substr(0, buffer.find(' ')) == "+b"){
                 std::string toFind = server.getUsers().at(fd).getUserMode();
                 std::map<int, std::string>::iterator tmp_it = it->getUserMode().begin();
                 std::map<int, User>::iterator tmp_it2;
-
                 std::string flagban = buffer.substr(0, buffer.find("\r\n"));
+
                 if (flagban[3] != '*'){
                     return ;
                 }
                 else if (toFind.find("o") == std::string::npos){
-                    for(; tmp_it != it->getUserMode().end(); tmp_it++){
+
+                    std::map<int, std::string>::iterator tmp_it_end = it->getUserMode().end();
+                    for(; tmp_it != tmp_it_end; tmp_it++){
                         if (fd == tmp_it->first){
                             if (tmp_it->second.find("o") == std::string::npos){
-                                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
+                                reply(fd, server, fd, ":" + hostname + " 482 " + nickname + " " + channelName + " :You're not channel operator\r\n");
                                 return ;
                             }
                         }
@@ -381,8 +433,10 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
                 }
                 it->getBanList().push_back(buffer.substr(3, buffer.find("\r\n")));
 
-                for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it->getFdList().end(); it3++){
-                    reply(fd, server, *it3, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flagban + "\r\n");
+                std::vector<int>::iterator it3_end = it->getFdList().end();
+
+                for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it3_end; it3++){
+                    reply(fd, server, *it3, ":" + hostname + " 324 " + nickname + " " + tmp + " " + flagban + "\r\n");
                 }
                 return;
             }
@@ -395,91 +449,102 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
                 std::string flag_op = buffer.substr(0, buffer.find("\r\n"));
 
                 if (toFind.find("o") == std::string::npos){
-                    for(; tmp_it != it->getUserMode().end(); tmp_it++){
+                    std::map<int, std::string>::iterator tmp_it_end2 = it->getUserMode().end();
+                    for(; tmp_it != tmp_it_end2; tmp_it++){
                         if (fd == tmp_it->first){
                             if (tmp_it->second.find("o") == std::string::npos){
-                                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
+                                reply(fd, server, fd, ":" + hostname + " 482 " + nickname + " " + channelName + " :You're not channel operator\r\n");
                                 return ;
                             }
                         }
                     }
                 }
+
                 std::string toPromote = buffer.substr(3, buffer.find("\r\n"));
                 std::vector<std::string>::iterator it8 = it->getUserList().begin();
                 toPromote.erase(toPromote.end() - 2, toPromote.end());
                 int h = 0;
-                for (; it8 != it->getUserList().end(); it8++){
+                std::vector<std::string>::iterator it8_end = it->getUserList().end();
+
+                for (; it8 != it8_end; it8++){
                     if (*it8 == toPromote){
                         if (it->getUserMode().at(it->getFdList()[h]).find("o") == std::string::npos)
                             it->getUserMode().at(it->getFdList()[h]) += "o";
-                        for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it->getFdList().end(); it3++){
-                            reply(fd, server, *it3, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flag_op + "\r\n");
+                        
+                        std::vector<int>::iterator it3_end = it->getFdList().end();
+                        for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it3_end; it3++){
+                            reply(fd, server, *it3, ":" + hostname + " 324 " + nickname + " " + tmp + " " + flag_op + "\r\n");
                         }
                         return ;
                     }
                     h++;
                 }
-                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 441 " + server.getUsers().at(fd).getNickname() + " " + toPromote + " :User not on the channel\r\n");
+                reply(fd, server, fd, ":" + hostname + " 441 " + nickname + " " + toPromote + " :User not on the channel\r\n");
                 return;
             }
 
             else if (buffer.substr(0, buffer.find(' ')) == "-o"){
                 std::string toFind = server.getUsers().at(fd).getUserMode();
                 std::map<int, std::string>::iterator tmp_it = it->getUserMode().begin();
+                std::map<int, std::string>::iterator tmp_it_end3 = it->getUserMode().end();
                 std::map<int, User>::iterator tmp_it2;
-
                 std::string flag_op = buffer.substr(0, buffer.find("\r\n"));
 
                 if (toFind.find("o") == std::string::npos){
-                    for(; tmp_it != it->getUserMode().end(); tmp_it++){
+                    for(; tmp_it != tmp_it_end3; tmp_it++){
                         if (fd == tmp_it->first){
                             if (tmp_it->second.find("o") == std::string::npos){
-                                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
+                                reply(fd, server, fd, ":" + hostname + " 482 " + nickname + " " + channelName + " :You're not channel operator\r\n");
                                 return ;
                             }
                         }
                     }
                 }
+
                 std::string toRemove = buffer.substr(3, buffer.find("\r\n"));
                 std::vector<std::string>::iterator it8 = it->getUserList().begin();
                 toRemove.erase(toRemove.end() - 2, toRemove.end());
                 int h = 0;
-                for (; it8 != it->getUserList().end(); it8++){
+                std::vector<std::string>::iterator it8_end2 = it->getUserList().end();
+
+                for (; it8 != it8_end2; it8++){
                     if (*it8 == toRemove){
                         if (it->getUserMode().at(it->getFdList()[h]).find("o") != std::string::npos)
                             it->getUserMode().at(it->getFdList()[h]).erase(it->getUserMode().at(it->getFdList()[h]).find("o"));
-                        std::cout << it->getUserMode().at(it->getFdList()[h]) << std::endl;
-                        for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it->getFdList().end(); it3++){
-                            reply(fd, server, *it3, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " " + flag_op + "\r\n");
+                        // std::cout << it->getUserMode().at(it->getFdList()[h]) << std::endl;
+
+                        std::vector<int>::iterator it3_end2 = it->getFdList().end();
+                        for (std::vector<int>::iterator it3 = it->getFdList().begin(); it3 != it3_end2; it3++){
+                            reply(fd, server, *it3, ":" + hostname + " 324 " + nickname + " " + tmp + " " + flag_op + "\r\n");
                         }
                         return ;
                     }
                     h++;
                 }
-                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 441 " + server.getUsers().at(fd).getNickname() + " " + toRemove + " :User not on the channel\r\n");
+                reply(fd, server, fd, ":" + hostname + " 441 " + nickname + " " + toRemove + " :User not on the channel\r\n");
                 return;
             }
 
             else if (buffer.substr(0, buffer.find("\r\n")) == "+i"){
                 if (it->getUserMode().at(fd).find("o") == std::string::npos && server.getUsers().at(fd).getUserMode().find("o") == std::string::npos){
-                    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
+                    reply(fd, server, fd, ":" + hostname + " 482 " + nickname + " " + channelName + " :You're not channel operator\r\n");
                     return ;
                 }
                 if (it->getChannelMode().find("i") == std::string::npos)
                     it->getChannelMode() += "i";
-                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + it->getChannelMode() + "\r\n");
+                reply(fd, server, fd, ":" + hostname + " 324 " + nickname + " " + tmp + " +" + it->getChannelMode() + "\r\n");
                 return;
             }
 
             else if (buffer.substr(0, buffer.find("\r\n")) == "-i"){
                 if (it->getUserMode().at(fd).find("o") == std::string::npos && server.getUsers().at(fd).getUserMode().find("o") == std::string::npos){
-                    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 482 " + server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You're not channel operator\r\n");
+                    reply(fd, server, fd, ":" + hostname + " 482 " + nickname + " " + channelName + " :You're not channel operator\r\n");
                     return ;
                 }
                 if (it->getChannelMode().find("i") != std::string::npos)
                     //Check if user is operator
                     it->getChannelMode().erase(it->getChannelMode().find("i"));
-                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + it->getChannelMode() + "\r\n");
+                reply(fd, server, fd, ":" + hostname + " 324 " + nickname + " " + tmp + " +" + it->getChannelMode() + "\r\n");
                 return;
             }
 
@@ -501,95 +566,108 @@ void Command::MODE(std::string buffer, int fd,  Server & server){
                 if (username[i][0] == '+')
                     break;
                 if (!it->isInUserList(username[i])){
-                    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 441 " + server.getUsers().at(fd).getNickname() + " " + tmp + " :User not on the channel\r\n");
+                    reply(fd, server, fd, ":" + hostname + " 441 " + nickname + " " + tmp + " :User not on the channel\r\n");
                 }
                 else{
-                    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n");
+                    reply(fd, server, fd, ":" + hostname + " 324 " + nickname + " " + tmp + " +" + flags[i + 1] + " " + username[i] + "\r\n");
                 }
             }
             if (i < flags.size() - 1){
                 ;
             }
         }
-        reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 324 " + server.getUsers().at(fd).getNickname() + " " + tmp + " +" + it->getChannelMode() + "\r\n");
+        reply(fd, server, fd, ":" + hostname + " 324 " + nickname + " " + tmp + " +" + it->getChannelMode() + "\r\n");
     }
     else{
-        if (tmp != server.getUsers().at(fd).getNickname() && server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 502 " + server.getUsers().at(fd).getNickname() + " :Can't change mode for other users\r\n");
+        if (tmp != nickname && server.getUsers().at(fd).getUserMode().find('o') == std::string::npos){
+            reply(fd, server, fd, ":" + hostname + " 502 " + nickname + " :Can't change mode for other users\r\n");
             return;
         }
         std::map<int, User>::iterator it = server.getUsers().begin();
-        for (; it != server.getUsers().end(); it++){
+        std::map<int, User>::iterator it_end4 = server.getUsers().end();
+
+        for (; it != it_end4; it++){
             if (it->second.getNickname() == tmp)
                 break;
         }
-        if (it == server.getUsers().end()){
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + tmp + " :No such nick/channel\r\n");
+        if (it == it_end4){
+            reply(fd, server, fd, ":" + hostname + " 401 " + nickname + " " + tmp + " :No such nick/channel\r\n");
             return;
         }
+
         if (buffer.find(' ') != std::string::npos)
             buffer = buffer.substr(0, buffer.find(' '));
         if (buffer.find('\r') != std::string::npos)
             buffer = buffer.substr(0, buffer.find('\r'));
         if (buffer[0] != '+' && buffer[0] != '-')
             buffer = '+' + buffer;
-        for (std::string::size_type i = 1; i < buffer.size(); i++)//effacer les doublon et trouver les modes inconnus
+
+        size_t buff_size = buffer.size();
+        for (size_t i = 1; i < buff_size; i++)//effacer les doublon et trouver les modes inconnus
         {
             if (buffer[i] != 'w' && buffer[i] != 'i' && buffer[i] != 'o'){
-                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 501 " + server.getUsers().at(fd).getNickname() + " :Unknown MODE flag\r\n");
+                reply(fd, server, fd, ":" + hostname + " 501 " + nickname + " :Unknown MODE flag\r\n");
                 return;
             }
-            std::string::size_type j = i + 1;
-            while (j < buffer.size())
+
+            size_t j = i + 1;
+            while (j < buff_size)
             {
-                if (buffer[i] == buffer[j])
+                if (buffer[i] == buffer[j]){
                     buffer.erase(j, 1);
+                    buff_size = buffer.size();
+                }
                 else
                     ++j;
             }
         }
+
         if (buffer.find('o') != std::string::npos && server.getUsers().at(fd).getUserMode().find('o') == std::string::npos)
             buffer.erase(buffer.find('o'), 1);
         std::string mode = server.getUsers().at(fd).getUserMode();
+        buff_size = buffer.size();
         if (buffer[0] == '+'){
-            for (std::string::size_type i = 1; i < buffer.size(); i++){//ajouter des modes
+            for (size_t i = 1; i < buff_size; i++){//ajouter des modes
                 if (mode.find(buffer[i]) == std::string::npos)
                     mode += buffer[i];
             }
         }
         else{
-            for (std::string::size_type i = 1; i < buffer.size(); i++){//enlever des modes
+            for (size_t i = 1; i < buff_size; i++){//enlever des modes
                 if (mode.find(buffer[i]) != std::string::npos)
                     mode.erase(mode.find(buffer[i]), 1);
             }
         }
         server.getUsers().at(fd).setUserMode(mode);
-        reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 221 " + server.getUsers().at(fd).getNickname() + " +" + server.getUsers().at(fd).getUserMode() + "\r\n");
+        reply(fd, server, fd, ":" + hostname + " 221 " + nickname + " +" + server.getUsers().at(fd).getUserMode() + "\r\n");
     }
 
 };
 
 
 void Command::MOTD(std::string, int fd, Server & server){
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 375 " + server.getUsers().at(fd).getNickname() + " :- ClownRC Message of the day\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :-           achatela                                hcarpent\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄           ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇           ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹           ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄           ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄           ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⡄⢸⣯⣥⡴⠒⢊⡁ 🧿 ⢸⣿⣿⣿⣿⣦⠈⠁ 🧿 ⣆⠈⣁⣈⣿⣿⡴         ⡄⢸⣯⣥⡴⠒⢊⡁ ⭕ ⢸⣿⣿⣿⣿⣦⠈⠁ ⭕ ⣆⠈⣁⣈⣿⣿⡴\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿           ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄           ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄           ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄           ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄           ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄           ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄           ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷           ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿             ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿\r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 372 " + server.getUsers().at(fd).getNickname() + " :- \r\n");
-    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 376 " + server.getUsers().at(fd).getNickname() + " :End of /MOTD command\r\n");
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
+    std::string nickname = server.getUsers().at(fd).getNickname();
+
+    reply(fd, server, fd, ":" + hostname + " 375 " + nickname + " :- ClownRC Message of the day\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :-           achatela                                hcarpent\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄           ⣼⡟⠋⣀⣼⣾⣶⣶⣦⣤⣤⣴⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⡘⢹⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇           ⡟⠄⢰⣿⣿⣿⣿⣿⣿⣿⠈⠈⣿⣿⣿⣿⡋⠉⣻⣿⣿⣿⣿⣿⣿⣿⡄⠘⣇\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹           ⠁⠄⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⢵⣽⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠄⢹\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄           ⠄⢀⣾⣿⣿⣿⣿⣿⣿⣿⡿⠋⣿⣿⣿⣿⣿⠉⠻⠿⣿⣿⣿⣿⣿⣿⣿⣇⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄           ⠄⢰⣿⣿⡿⠿⠟⠋⠉⠄⠄⠈⣿⣿⣿⣿⡏⢀⣤⣤⣄⣀⣀⣀⡈⠉⢻⣿⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⡄⢸⣯⣥⡴⠒⢊⡁ 🧿 ⢸⣿⣿⣿⣿⣦⠈⠁ 🧿 ⣆⠈⣁⣈⣿⣿⡴         ⡄⢸⣯⣥⡴⠒⢊⡁ ⭕ ⢸⣿⣿⣿⣿⣦⠈⠁ ⭕ ⣆⠈⣁⣈⣿⣿⡴\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿           ⣿⢸⣿⣿⣿⣿⣶⣶⣿⣶⣡⣼⣿⣿⣿⣿⣿⢿⣆⣤⣾⣬⣭⣵⣶⣿⣿⣿⣿\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄           ⠄⢻⡟⣩⣾⣿⣿⣿⠏⠿⡿⢿⡿⠿⠯⠎⠉⠙⠻⣿⣿⣿⡿⢖⣀⣀⠄⣼⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄           ⢀⠘⣷⣿⢿⣿⣿⣿⡀⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⢸⣿⠿⠟⠋⠁⣴⣿⠏⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄           ⠄⠄⠘⣿⣷⣌⠙⠻⢿⣷⣶⣤⣤⣤⣀⣠⡤⠞⡋⡍⠄⠂⠄⠄⣼⣿⠃⠄⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄           ⠄⠄⠄⠄⢸⣿⣦⠄⠘⣿⡁⣾⣹⡍⣁⠐⡆⡇⠁⡌⠄⠄⠄⣰⣿⠇⠄⠄⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄           ⠄⠄⠄⠄⠄⠈⣿⣿⣷⡹⢹⠸⢣⢈⠘⡇⠘⠈⠄⠁⠄⠄⣼⣿⣿⠃⣰⠄⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄           ⠄⠄⠄⠄⠄⣷⠘⣿⣿⣷⡀⠄⠸⢿⣿⡏⣾⠓⠃⠄⠄⢀⡟⣿⠏⣰⣿⣷⠄\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷           ⠄⠄⣠⣿⣿⣿⣷⠙⣿⣿⣷⡀⠄⠈⠄⠄⠄⠄⠄⠄⣠⡞⣼⡿⢀⣿⣿⣿⣷\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿             ⠄⣼⣿⣿⣿⣿⣿⣷⠈⠿⣝⣿⣿⣦⣤⣭⣥⣤⣤⣶⣾⠿⠋⢀⣼⣿⣿\r\n");
+    reply(fd, server, fd, ":" + hostname + " 372 " + nickname + " :- \r\n");
+    reply(fd, server, fd, ":" + hostname + " 376 " + nickname + " :End of /MOTD command\r\n");
 };
 
 
@@ -598,58 +676,70 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
     buffer.erase(0, buffer.find(" :") + 2);
     std::string tmp_msg(buffer.substr(0, buffer.find("\r\n")));
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
+    std::string nickname = server.getUsers().at(fd).getNickname();
 
     std::map<int, User>::iterator it = server.getUsers().begin();
 
     if (tmp_user[0] != '#'){
-        while (it != server.getUsers().end()){
+        std::map<int, User>::iterator it_end = server.getUsers().end();
+        while (it != it_end){
             if (it->second.getNickname() == tmp_user)
                 break;
             it++;
         }
-        if (it == server.getUsers().end()){
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
+        if (it == it_end){
+            reply(fd, server, fd, ":" + hostname + " 401 " + nickname + " " + tmp_user + " :No such nick/channel\r\n");
         }
     }
 
     if (tmp_user[0] == '#'){
         std::vector<Channel>::iterator it = server.getChannels().begin();
+        std::vector<Channel>::iterator it_end2 = server.getChannels().end();
 
-        while (it != server.getChannels().end()){
+        while (it != it_end2){
             if (it->getChannelName() == tmp_user)
                 break;
             it++;
         }
-        if (it == server.getChannels().end()){
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
+        if (it == it_end2){
+            reply(fd, server, fd, ":" + hostname + " 401 " + nickname + " " + tmp_user + " :No such nick/channel\r\n");
             return ;
         }
-        for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it->getBanList().end(); it2++){
-            if ("*!*" + server.getUsers()[fd].getUsername() + "@*" + server.getUsers()[fd].getDomainName() + "\r\n" == *it2){
-                reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 404 " +  server.getUsers().at(fd).getNickname() + " " + it->getChannelName() + " :You are banned from this channel\r\n");
+        
+        std::vector<std::string>::iterator it2_end = it->getBanList().end();
+        std::string domainName = server.getUsers()[fd].getDomainName();
+        std::string username2 = server.getUsers()[fd].getUsername();
+        for (std::vector<std::string>::iterator it2 = it->getBanList().begin(); it2 != it2_end; it2++){
+            if ("*!*" + username2 + "@*" + domainName + "\r\n" == *it2){
+                reply(fd, server, fd, ":" + hostname + " 404 " +  nickname + " " + it->getChannelName() + " :You are banned from this channel\r\n");
                 return;
             }
         }
         std::vector<std::string>::iterator it2 = it->getUserList().begin();
-        for (; it2 != it->getUserList().end(); it2++){
-            if (*it2 == server.getUsers().at(fd).getNickname())
+        std::vector<std::string>::iterator it2_end2 = it->getUserList().end();
+        for (; it2 != it2_end2; it2++){
+            if (*it2 == nickname)
                 break;
         }
-        if (it2 == it->getUserList().end()){
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 404 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :Cannot send to channel\r\n");
+        if (it2 == it2_end2){
+            reply(fd, server, fd, ":" + hostname + " 404 " + nickname + " " + tmp_user + " :Cannot send to channel\r\n");
             return;
         }
-        for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != it->getFdList().end(); ite++){
+
+        std::vector<int>::iterator ite_end = it->getFdList().end();
+        for (std::vector<int>::iterator ite = it->getFdList().begin(); ite != ite_end; ite++){
             if (*ite != fd)
-                reply(fd, server, *ite, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
+                reply(fd, server, *ite, ":" + hostname + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
         }
     }
     else {
-        for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+        std::map<int,User>::iterator it_end5 = server.getUsers().end();
+        for (std::map<int, User>::iterator it = server.getUsers().begin(); it != it_end5; it++){
             if (it->second.getNickname() == tmp_user){
-                reply(fd, server, it->first, ":" + server.getUsers().at(fd).getFullHostname() + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
+                reply(fd, server, it->first, ":" + hostname + " PRIVMSG " + tmp_user + " :" + tmp_msg + "\r\n");
                 if (server.getUsers().at(it->first).getIsAway() == true){
-                    reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 301 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :" + server.getUsers().at(it->first).getAwayMsg() + "\r\n");
+                    reply(fd, server, fd, ":" + hostname + " 301 " + nickname + " " + tmp_user + " :" + server.getUsers().at(it->first).getAwayMsg() + "\r\n");
                 }
                 break ;
             }
@@ -657,23 +747,26 @@ void Command::PRIVMSG(std::string buffer, int fd,  Server & server){
     }
 };
 
+
 void Command::NOTICE(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp_user(buffer.substr(0, buffer.find(' ')));
 
     std::map<int, User>::iterator it = server.getUsers().begin();
+    std::map<int, User>::iterator it_end = server.getUsers().end();
 
-    while (it != server.getUsers().end()){
+    while (it != it_end){
         if (it->second.getNickname() == tmp_user)
             break;
         it++;
     }
-    if (it == server.getUsers().end()){
+    if (it == it_end){
         reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 401 " + server.getUsers().at(fd).getNickname() + " " + tmp_user + " :No such nick/channel\r\n");
         return ;
     }
     reply(fd, server, it->first, ":" + server.getUsers().at(fd).getFullHostname() + " NOTICE " + buffer + "\r\n");
 };
+
 
 void Command::OPER(std::string buffer, int fd,  Server & server){
     if (buffer.size() <= 7){
@@ -707,20 +800,23 @@ void Command::PART(std::string buffer, int fd,  Server & server){
     std::string serv_name(buffer.substr(0, buffer.find("\r\n")));
 
     std::vector<Channel>::iterator it = server.getChannels().begin();
-    for (; it != server.getChannels().end(); it++){
+    std::vector<Channel>::iterator it_end = server.getChannels().end();
+    for (; it != it_end; it++){
         if (it->getChannelName() == serv_name)
             break;
     }
-    if (it == server.getChannels().end()){
+    if (it == it_end){
         reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 403 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :No such channel\r\n");
         return ;
     }
     std::vector <std::string>::iterator tmp_it2 = it->getUserList().begin();
     std::vector<int>::iterator tmp_it = it->getFdList().begin();
+    std::vector<int>::iterator tmp_it_end = it->getFdList().end();
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
 
-    for (; tmp_it < it->getFdList().end(); tmp_it++){
+    for (; tmp_it < tmp_it_end; tmp_it++){
         if (*tmp_it == fd){
-            reply(fd, server, *tmp_it, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
+            reply(fd, server, *tmp_it, ":" + hostname + " PART " + serv_name + "\r\n");
             it->getFdList().erase(tmp_it);
             it->getUserList().erase(tmp_it2);
             if (it->getFdList().empty()){
@@ -728,16 +824,16 @@ void Command::PART(std::string buffer, int fd,  Server & server){
                 return ;
             }
             else{
-                for(std::vector<int>::iterator it2 = it->getFdList().begin(); it2 != it->getFdList().end(); it2++){
-                    reply(fd, server, *it2, ":" + server.getUsers().at(fd).getFullHostname() + " PART " + serv_name + "\r\n");
+                for(std::vector<int>::iterator it2 = it->getFdList().begin(); it2 != tmp_it_end; it2++){
+                    reply(fd, server, *it2, ":" + hostname + " PART " + serv_name + "\r\n");
                 }
             }
             return ;
         }
         tmp_it2++;
     }
-    if (tmp_it == it->getFdList().end()){
-        reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 442 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :You're not on that channel\r\n");
+    if (tmp_it == tmp_it_end){
+        reply(fd, server, fd, ":" + hostname + " 442 " + server.getUsers().at(fd).getNickname() + " " + serv_name + " :You're not on that channel\r\n");
         return ;
     }
 };
@@ -746,7 +842,7 @@ void Command::PART(std::string buffer, int fd,  Server & server){
 void Command::PING(std::string buffer, int fd, Server & server ){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string toSend(":" + server.getUsers().at(fd).getFullHostname() + " PONG :" + buffer);
-    send(fd, toSend.c_str(), toSend.length(), 0);
+    send(fd, toSend.c_str(), toSend.length(), 0); // TODO change avec reply
     if (DEBUG)
         std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
 };
@@ -758,10 +854,12 @@ void Command::QUIT(std::string buffer, int fd, Server & server){
 no_segfault:
 
     std::vector<Channel>::iterator it = server.getChannels().begin();
+    std::vector<Channel>::iterator it_end = server.getChannels().end();
     size_t i = 0;
-    for(; it != server.getChannels().end(); it++){
+    for(; it != it_end; it++){
         i = 0;
-        while (i < it->getFdList().size()){
+        size_t i_max = it->getFdList().size();
+        while (i < i_max){
             if (it->getFdList()[i] == fd){
                 PART("PART " + it->getChannelName() + "\r\n", fd, server);
                 goto no_segfault;
@@ -879,11 +977,14 @@ void Command::USERHOST(std::string buffer, int fd,  Server & server){
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     std::string toFind(tmp.substr(0, tmp.find("\r\n")));
     std::string userhost;
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
+    std::string nickname = server.getUsers().at(fd).getNickname();
+    std::map<int, User>::iterator it_end = server.getUsers().end();
 
-    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != it_end; it++){
         if (it->second.getNickname() == toFind){
             userhost = it->second.getUserHost();
-            reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 302 " + server.getUsers().at(fd).getNickname() + " " + userhost + "\r\n");
+            reply(fd, server, fd, ":" + hostname + " 302 " + nickname + " " + userhost + "\r\n");
         }
     }
 };
@@ -897,9 +998,12 @@ void Command::WALLOPS(std::string buffer, int fd,  Server & server){
         return ;
     }
 
-    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+    std::string hostname = server.getUsers().at(fd).getFullHostname();
+    std::map<int, User>::iterator it_end = server.getUsers().end();
+
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != it_end; it++){
         if (it->second.getUserMode().find("w") != std::string::npos)
-            reply(fd, server, it->first, ":" + server.getUsers().at(fd).getFullHostname() + " WALLOPS " + msg);
+            reply(fd, server, it->first, ":" + hostname + " WALLOPS " + msg);
     }
 };
 
@@ -920,8 +1024,9 @@ void Command::WHOIS(std::string buffer, int fd, Server & server){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string tmp(buffer.substr(0, buffer.find(" ")));
     std::string toFind(tmp.substr(0, tmp.find("\r\n")));
+    std::map<int, User>::iterator it_end = server.getUsers().end();
 
-    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != server.getUsers().end(); it++){
+    for (std::map<int, User>::iterator it = server.getUsers().begin(); it != it_end; it++){
         if (it->second.getNickname() == toFind){
             reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 311 " + server.getUsers().at(fd).getNickname() + " " + toFind + " " + it->second.getUsername() + " " + server.getUsers().at(fd).getHostname() + " * :" + it->second.getRealName() + "\r\n");
             reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 318 " + server.getUsers().at(fd).getNickname() + " " + toFind + " :End of /WHOIS list\r\n");
@@ -974,7 +1079,8 @@ void Command::NICK(std::string buffer, int fd, Server & server){
             reply(fd, server, fd, ":" + server.getUsers().at(fd).getFullHostname() + " 432 " + server.getUsers().at(fd).getNickname() + " :Nickname " + buffer + " is invalid !\r\n");
             return ;
     }
-    for (std::map<int, User >::iterator it = server.getUsers().begin() ; it != server.getUsers().end(); it++){
+    std::map<int, User >::iterator it_end = server.getUsers().end();
+    for (std::map<int, User >::iterator it = server.getUsers().begin(); it != it_end; it++){
         if (it->second.getNickname() == buffer){
             reply(fd, server, fd, ": 433 * " + buffer + " :Nickname is already in use\r\n");
             return ;
