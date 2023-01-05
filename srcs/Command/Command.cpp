@@ -842,7 +842,7 @@ void Command::PART(std::string buffer, int fd,  Server & server){
 void Command::PING(std::string buffer, int fd, Server & server ){
     buffer.erase(0, buffer.find(' ') + 1);
     std::string toSend(":" + server.getUsers().at(fd).getFullHostname() + " PONG :" + buffer);
-    send(fd, toSend.c_str(), toSend.length(), 0); // TODO change avec reply
+    reply(fd, server, fd, toSend.c_str());
     if (DEBUG)
         std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend << RESET;
 };

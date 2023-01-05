@@ -110,7 +110,6 @@ void Server::sondage(){
     //         }
     //     }
     // }
-    std::cout << "AVANT POLL" << std::endl;
     if (!(poll(&getPfds()[0], getPfds().size(), -1) > 0)){
         // std::cout << "ret" << std::endl;
         // for (int i = 0; i < _index_fds.size(); i++){
@@ -118,10 +117,8 @@ void Server::sondage(){
         //     getPfds()[_index_fds[i]].revents = POLLIN;
         // }
         // _index_fds.clear();
-        std::cout << "POLL RETURND" << std::endl;
         return;
     }
-    std::cout << "QPRES POLL" << std::endl;
     // if (getAtFd().size() >= 1){
     //     std::cout << "in if" << std::endl;
     //     std::cout << getUsers().at(_index_fds[0]).getToSend().empty() << std::endl;
@@ -154,7 +151,6 @@ void Server::sondage(){
     //     // Si la chaine a envoye est empty, pop le fd correspondant dans getAtFd
     //     // Reset les getPfds(index).events a POLLIN
     // }
-    std::cout << "DEBUT" << std::endl;
     if (getPfds()[0].revents == POLLIN){
         addPfd();
     }
@@ -243,7 +239,6 @@ fix:
                         // Reset les getPfds(index).events a POLLIN
                     }
                     memset(server_reply, 0, 512);
-    std::cout << "FIN" << std::endl;
                     return ;
                 }
             }
@@ -258,14 +253,12 @@ fix:
                         getPfds().erase(it2);
                         memset(server_reply, 0, 512);
                         getUsers().erase(it);
-    std::cout << "FIN" << std::endl;
                         return ;
                     }
                 }
             }
         }
     }
-    std::cout << "FIN" << std::endl;
     //std::cout << "\terver_reply before reset = " << server_reply << std::endl;
     memset(server_reply, 0, 512);
 }
@@ -278,29 +271,29 @@ void Server::checkInfo(User & user, int fd)
     {
         user.setAccess(AUTHORIZED);
         std::string toSend1(":" + user.getFullHostname() + " 001 " + user.getNickname() + " :Welcome to the Internet Relay Network " + user.getFullHostname() + "\r\n");
-        send(fd, toSend1.c_str(), toSend1.length(), 0);
         std::string toSend2(":" + user.getFullHostname() + " 002 " + user.getNickname() + " :Your host is " + user.getHost() + "\r\n");
-        send(fd, toSend2.c_str(), toSend2.length(), 0);
         std::string toSend3(":" + user.getFullHostname() + " 003 " + user.getNickname() + " :This server was created " + std::asctime(std::localtime(&_server_time)) + "\r\n");
-        send(fd, toSend3.c_str(), toSend3.length(), 0);
         std::string toSend4(":" + user.getFullHostname() + " 004 " + user.getNickname() + " :ClownRC 1.0 iwo Oovimnptkl\r\n");
-        send(fd, toSend4.c_str(), toSend4.length(), 0);
         std::stringstream stream2;
         stream2 << _Users.size() - atoi(getInvisibleUsers().c_str());
         std::string toSend5(":" + user.getFullHostname() + " 251 " + user.getNickname() + " :" + stream2.str() + " user(s) and " + getInvisibleUsers() + " invisible on 1 server(s)\r\n");
-        send(fd, toSend5.c_str(), toSend5.length(), 0);
         std::string toSend6(":" + user.getFullHostname() + " 252 " + user.getNickname() + " " + getOperators() + " :operator(s) online\r\n");
-        send(fd, toSend6.c_str(), toSend6.length(), 0);
         std::string toSend7(":" + user.getFullHostname() + " 253 " + user.getNickname() + " 0 :unknown connection(s)\r\n");
-        send(fd, toSend7.c_str(), toSend7.length(), 0);
         std::stringstream stream;
         stream << getChannels().size();
         std::string toSend8(":" + user.getFullHostname() + " 254 " + user.getNickname() + " " + stream.str() + " :channel(s) formed\r\n");
-        send(fd, toSend8.c_str(), toSend8.length(), 0);
         stream2.str("");
         stream2 << _Users.size();
         std::string toSend9(":" + user.getFullHostname() + " 255 " + user.getNickname() + " :I have " + stream2.str() + " clients and 0 server(s)\r\n");
-        send(fd, toSend9.c_str(), toSend9.length(), 0);
+        Command().reply(fd, *this, fd, toSend1);
+        Command().reply(fd, *this, fd, toSend2);
+        Command().reply(fd, *this, fd, toSend3);
+        Command().reply(fd, *this, fd, toSend4);
+        Command().reply(fd, *this, fd, toSend5);
+        Command().reply(fd, *this, fd, toSend6);
+        Command().reply(fd, *this, fd, toSend7);
+        Command().reply(fd, *this, fd, toSend8);
+        Command().reply(fd, *this, fd, toSend9);
         if (DEBUG){
             std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend1 << RESET;
             std::cout << YELLOW << "Server" << BLUE << " >> " << CYAN << "[" << fd << "] " << BLUE << toSend2 << RESET;
